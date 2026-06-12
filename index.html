@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>등기구 스펙시트 생성기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/vendor/html2canvas.min.js"></script>
+<script src="/vendor/jspdf.umd.min.js"></script>
+<style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', -apple-system, sans-serif;
+  background: #f0f2f5;
+  height: 100vh;
+  overflow: hidden;
+  color: #111827;
+}
+
+/* ===== APP HEADER ===== */
+.app-header {
+  height: 52px;
+  background: #111827;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 50;
+}
+.app-header .logo { font-size: 20px; }
+.app-header h1 { color: #fff; font-size: 16px; font-weight: 700; }
+
+/* ===== MAIN LAYOUT: preview LEFT / form RIGHT ===== */
+.app-layout {
+  display: flex;
+  height: calc(100vh - 52px);
+}
+
+/* ═══ PREVIEW PANEL (LEFT) ═══════════════════════════ */
+.preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #e2e5e9;
+  padding: 24px;
+  overflow: hidden;
+  gap: 10px;
+  min-width: 0;
+}
+.preview-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.preview-wrapper {
+  transform-origin: top center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+  flex-shrink: 0;
+}
+
+/* ═══ FORM PANEL (RIGHT) ════════════════════════════ */
+.form-panel {
+  width: 400px;
+  flex-shrink: 0;
+  background: white;
+  border-left: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.form-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 20px;
+}
+.form-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== SECTION LABEL ===== */
+.section-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 18px 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* ===== FORM FIELDS ===== */
+.form-group { margin-bottom: 10px; }
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111827;
+  background: white;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.form-group input::placeholder { color: #d1d5db; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hint { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+input[type="file"] { display: none; }
+
+/* ===== IMAGE UPLOAD BOX ===== */
+.img-upload-box {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  min-height: 80px;
+}
+/* Empty state */
+.img-upload-box .upload-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 12px;
+  gap: 4px;
+  pointer-events: none;
+}
+.img-upload-box .upload-empty .icon { font-size: 22px; }
+.img-upload-box .upload-empty .register-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+  font-family: inherit;
+  pointer-events: none;
+}
+.img-upload-box .upload-empty .sub-hint {
+  font-size: 11px;
+  color: #9ca3af;
+}
+/* Hover state (empty) */
+.img-upload-box:not(.has-image):hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+.img-upload-box.over { border-color: #3b82f6; background: #eff6ff; }
+
+/* Filled state */
+.img-upload-box.has-image {
+  border-style: solid;
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+.img-upload-box.has-image .upload-empty { display: none; }
+.img-upload-box img {
+  display: block;
+  max-width: 100%;
+  max-height: 110px;
+  object-fit: contain;
+  margin: 8px auto;
+}
+/* Hover overlay (filled only) */
+.img-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+}
+.img-upload-box.has-image:hover .img-overlay { display: flex; }
+.img-overlay-btn {
+  background: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  color: #111;
+}
+.img-overlay-btn.danger { color: #dc2626; }
+
+/* ===== BG REMOVAL STRIP ===== */
+.bg-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  gap: 8px;
+}
+.bg-strip-left { flex: 1; min-width: 0; }
+.bg-strip-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rmbg-counter {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: white;
+  border: 1.5px solid #bfdbfe;
+  color: #1d4ed8;
+}
+.rmbg-counter.low { color: #b45309; border-color: #fde68a; background: #fefce8; }
+.rmbg-counter.empty { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.bg-strip-sub {
+  font-size: 10px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+.prog-bar {
+  height: 3px;
+  background: #dbeafe;
+  border-radius: 2px;
+  margin-top: 5px;
+  overflow: hidden;
+  display: none;
+}
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+/* ===== CUSTOM OPTIONS ===== */
+.custom-opt-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  align-items: flex-start;
+}
+.val-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.custom-opt-row input {
+  padding: 7px 9px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #111827;
+  outline: none;
+  background: white;
+  transition: border-color 0.2s;
+}
+.custom-opt-row input:focus { border-color: #3b82f6; }
+.custom-opt-row input.key-input { flex: 0 0 120px; }
+.custom-opt-row input.val-input { width: 100%; }
+.btn-remove-opt {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.btn-remove-opt:hover { background: #fecaca; }
+.btn-add-opt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  background: #f0f9ff;
+  border: 1.5px dashed #7dd3fc;
+  border-radius: 7px;
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  justify-content: center;
+  margin-top: 2px;
+  transition: all 0.15s;
+}
+.btn-add-opt:hover { background: #e0f2fe; border-color: #38bdf8; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 9px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 700;
+  font-family: inherit; cursor: pointer; border: none;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.btn-primary { background: #2563eb; color: white; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-green { background: #059669; color: white; flex: 1; justify-content: center; }
+.btn-pdf   { background: #dc2626; color: white; flex: 1; justify-content: center; }
+.btn-pdf:hover { background: #b91c1c; }
+.btn-green:hover { background: #047857; }
+.btn-sm { padding: 5px 10px; font-size: 11px; font-weight: 700; }
+.btn-ghost { background: transparent; color: #6b7280; border: 1.5px solid #e5e7eb; flex-shrink: 0; }
+.btn-ghost:hover { background: #f3f4f6; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #111827; color: white; padding: 10px 20px;
+  border-radius: 9px; font-size: 14px; font-weight: 500;
+  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* =======================================================
+   SPEC CARD — 1000 × 700px
+   ======================================================= */
+.spec-card {
+  width: 1000px;
+  height: 700px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  overflow: hidden;
+}
+
+/* ── Header: 1000 × 68px ─────────────────────────────── */
+.sc-header {
+  width: 1000px;
+  height: 68px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 32px 10px 32px;
+  /* 930px 1px 라인 — 중앙정렬, border-bottom 대신 background-image 사용 */
+  background-image: linear-gradient(#111, #111);
+  background-size: 930px 1px;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+.sc-category {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111;
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+
+/* ── Body: 1000 × 632px ──────────────────────────────── */
+.sc-body {
+  width: 1000px;
+  height: 632px;
+  display: flex;
+  flex: 1;
+}
+
+/* ── Left image area: 500 × 632px ───────────────────── */
+.sc-left {
+  width: 500px;
+  flex-shrink: 0;
+  height: 632px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0e0e0;
+}
+.sc-photo-area {
+  width: 500px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.sc-photo-area img {
+  max-width: 470px;
+  object-fit: contain;
+}
+.sc-dim-area {
+  width: 500px;
+  height: 316px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #e8e8e8;
+  overflow: hidden;
+  background: #ffffff;
+}
+.sc-dim-area img {
+  max-width: 470px;
+  max-height: 300px;
+  object-fit: contain;
+}
+
+/* ── Right spec area: 500 × 632px ───────────────────── */
+.sc-right {
+  flex: 1;
+  height: 632px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sc-spec-header {
+  padding: 20px 24px 14px 24px;
+  border-bottom: 1.5px solid #222;
+  flex-shrink: 0;
+}
+.sc-prod-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.3;
+}
+.sc-prod-partno {
+  font-size: 16px;
+  color: #3C3C3C;
+  font-weight: 500;
+  margin-top: 3px;
+  opacity: 0.6;
+}
+
+/* ===== SYMBOL CHIPS ===== */
+.input-with-chips { display: flex; flex-direction: column; gap: 5px; }
+.symbol-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.symbol-chip {
+  padding: 3px 10px;
+  background: #f3f4f6;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.symbol-chip:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #4338ca;
+}
+.sc-rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sc-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #ebebeb;
+  flex: 1;
+  min-height: 0;
+}
+.sc-key {
+  width: 120px;
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #555;
+  padding: 6px 8px 6px 20px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #ebebeb;
+  background: #fafafa;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  line-height: 1.35;
+}
+.sc-val {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 400;
+  color: #3C3C3C;
+  padding: 0 36px;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== APP HEADER ===== -->
+<div class="app-header">
+  <h1>등기구 스펙시트 생성기</h1>
+</div>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="app-layout">
+
+  <!-- ══ PREVIEW PANEL (LEFT) ══════════════════════════ -->
+  <div class="preview-panel" id="preview-panel">
+    <div class="preview-label">라이브 프리뷰</div>
+    <div class="preview-wrapper" id="preview-wrapper">
+      <div id="spec-preview" class="spec-card"></div>
+    </div>
+  </div>
+
+  <!-- ══ FORM PANEL (RIGHT) ════════════════════════════ -->
+  <div class="form-panel">
+    <div class="form-body">
+
+      <!-- 이미지 -->
+      <div class="section-label">이미지</div>
+
+      <div class="form-group">
+        <label>제품 이미지 *</label>
+        <div class="img-upload-box" id="box-product">
+          <div class="upload-empty">
+            <button class="register-btn" tabindex="-1">이미지 등록</button>
+            <span class="sub-hint">클릭 또는 드래그</span>
+          </div>
+          <div class="img-overlay">
+            <button class="img-overlay-btn" id="ovl-replace-product">교체</button>
+            <button class="img-overlay-btn danger" id="ovl-remove-product">삭제</button>
+          </div>
+        </div>
+        <input type="file" id="fi-product" accept="image/*">
+      </div>
+
+      <!-- 배경 제거 -->
+      <div class="bg-strip">
+        <div class="bg-strip-left">
+          <div class="bg-strip-title">
+            🪄 배경 자동 제거
+            <span class="rmbg-counter" id="rmbg-counter">50/50</span>
+          </div>
+          <div class="bg-strip-sub" id="bg-status">제품 이미지를 먼저 등록해주세요</div>
+          <div class="bg-strip-sub" id="rmbg-reset-info"></div>
+          <div class="prog-bar" id="prog-bar">
+            <div class="prog-fill" id="prog-fill"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-remove-bg" disabled>배경 제거</button>
+      </div>
+
+      <!-- 치수 이미지 -->
+      <div class="form-group" style="margin-top:12px;">
+        <label>치수 이미지 <span style="font-weight:400;text-transform:none;color:#9ca3af;">(선택)</span></label>
+        <div class="img-upload-box" id="box-dim">
+          <div class="upload-empty">
+            <button class="register-btn" tabindex="-1">이미지 등록</button>
+            <span class="sub-hint">없으면 제품 사진이 전체 표시</span>
+          </div>
+          <div class="img-overlay">
+            <button class="img-overlay-btn" id="ovl-replace-dim">교체</button>
+            <button class="img-overlay-btn danger" id="ovl-remove-dim">삭제</button>
+          </div>
+        </div>
+        <input type="file" id="fi-dim" accept="image/*">
+      </div>
+
+      <!-- 제품 정보 -->
+      <div class="section-label">제품 정보</div>
+
+      <div class="form-group">
+        <label>카테고리</label>
+        <select id="f-cat">
+          <option>DOWN LIGHT</option>
+          <option>PANEL LIGHT</option>
+          <option>SPOT LIGHT</option>
+          <option>TRACK LIGHT</option>
+          <option>LINEAR LIGHT</option>
+          <option>WALL LIGHT</option>
+          <option>CEILING LIGHT</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>제품명 *</label>
+        <input type="text" id="f-name" placeholder="예) 2인치 다운라이트 집중형">
+      </div>
+
+      <div class="form-group">
+        <label>품번</label>
+        <input type="text" id="f-partno" placeholder="예) K1-55">
+      </div>
+
+      <!-- 제품 스펙 -->
+      <div class="section-label" style="margin-top:16px;">제품 스펙</div>
+      <div id="custom-options-list"></div>
+      <button class="btn-add-opt" id="btn-add-opt">＋</button>
+
+    </div><!-- /.form-body -->
+
+    <!-- 하단 버튼 -->
+    <div class="form-footer">
+      <button class="btn btn-ghost" id="btn-reset">초기화</button>
+      <button class="btn btn-green" id="btn-download">PNG</button>
+      <button class="btn btn-pdf"   id="btn-download-pdf">PDF</button>
+    </div>
+  </div><!-- /.form-panel -->
+
+</div><!-- /.app-layout -->
+
+<div class="toast" id="toast"></div>
+
+<!-- =====================================================
+     SCRIPT
+     ===================================================== -->
+<script type="module">
+
+// ── State ─────────────────────────────────────────────
+const state = {
+  productUrl:   null,
+  bgRemovedUrl: null,
+  dimUrl:       null,
+};
+
+let customOptions = []; // [{key, val}]
+
+// ── DOM ───────────────────────────────────────────────
+const q = id => document.getElementById(id);
+
+// ── Helpers ───────────────────────────────────────────
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+function showToast(msg) {
+  const t = q('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── remove.bg Usage Counter ───────────────────────────
+const USAGE_KEY = 'rmbg_usage';
+const MONTHLY_LIMIT = 50;
+
+function getUsage() {
+  const raw  = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
+  const now  = new Date();
+  const month = `${now.getFullYear()}-${now.getMonth()}`;
+  if (raw.month !== month) { raw.month = month; raw.used = 0; }
+  return raw;
+}
+function saveUsage(data) { localStorage.setItem(USAGE_KEY, JSON.stringify(data)); }
+function remainingUses() { const d = getUsage(); return MONTHLY_LIMIT - (d.used || 0); }
+function incrementUsage() {
+  const d = getUsage();
+  d.used = (d.used || 0) + 1;
+  saveUsage(d);
+  renderCounter();
+}
+function renderCounter() {
+  const rem = remainingUses();
+  const el  = q('rmbg-counter');
+  el.textContent = `${rem}/${MONTHLY_LIMIT}`;
+  el.classList.remove('low','empty');
+  if (rem === 0)      el.classList.add('empty');
+  else if (rem <= 10) el.classList.add('low');
+
+  // Next reset info
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  q('rmbg-reset-info').textContent =
+    `매월 1일 갱신 · 다음 갱신: ${next.getMonth()+1}월 ${next.getDate()}일`;
+}
+
+// ── Image Upload Setup ────────────────────────────────
+function setupUpload({ boxId, inputId, onLoad, onRemove }) {
+  const box = q(boxId);
+  const inp = q(inputId);
+
+  function loadFile(file) {
+    if (!file?.type.startsWith('image/')) return;
+    const r = new FileReader();
+    r.onload = e => onLoad(e.target.result);
+    r.readAsDataURL(file);
+  }
+
+  // Click box → open picker (unless clicking overlay buttons)
+  box.addEventListener('click', e => {
+    if (e.target.classList.contains('img-overlay-btn') || e.target.classList.contains('register-btn')) return;
+    if (box.classList.contains('has-image') && e.target.closest('.img-overlay')) return;
+    inp.click();
+  });
+  // Register btn inside upload-empty
+  const registerBtn = box.querySelector('.register-btn');
+  if (registerBtn) registerBtn.addEventListener('click', e => { e.stopPropagation(); inp.click(); });
+
+  inp.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); inp.value = ''; });
+
+  // Drag & drop
+  box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('over'); });
+  box.addEventListener('dragleave', () => box.classList.remove('over'));
+  box.addEventListener('drop', e => { e.preventDefault(); box.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
+
+  // Overlay buttons
+  const replaceBtn = box.querySelector('[id^="ovl-replace"]');
+  const removeBtn  = box.querySelector('[id^="ovl-remove"]');
+  if (replaceBtn) replaceBtn.addEventListener('click', e => { e.stopPropagation(); inp.click(); });
+  if (removeBtn)  removeBtn.addEventListener('click', e => { e.stopPropagation(); onRemove(); });
+}
+
+function setBoxImage(boxId, url) {
+  const box = q(boxId);
+  let img = box.querySelector('img');
+  if (!img) { img = document.createElement('img'); box.insertBefore(img, box.querySelector('.img-overlay')); }
+  img.src = url;
+  box.classList.add('has-image');
+}
+function clearBox(boxId) {
+  const box = q(boxId);
+  box.classList.remove('has-image');
+  const img = box.querySelector('img');
+  if (img) img.remove();
+}
+
+// ── Product Image ─────────────────────────────────────
+setupUpload({
+  boxId: 'box-product', inputId: 'fi-product',
+  onLoad: url => {
+    state.productUrl   = url;
+    state.bgRemovedUrl = null;
+    setBoxImage('box-product', url);
+    q('btn-remove-bg').disabled = (remainingUses() === 0);
+    q('bg-status').textContent = remainingUses() > 0
+      ? '배경 제거 버튼을 눌러 배경을 제거하세요.'
+      : '⚠️ 이번 달 사용 횟수를 모두 소진했습니다.';
+    updatePreview();
+  },
+  onRemove: () => {
+    state.productUrl = state.bgRemovedUrl = null;
+    clearBox('box-product');
+    q('btn-remove-bg').disabled = true;
+    q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
+    updatePreview();
+  },
+});
+
+// ── Dimension Image ───────────────────────────────────
+setupUpload({
+  boxId: 'box-dim', inputId: 'fi-dim',
+  onLoad: url => { state.dimUrl = url; setBoxImage('box-dim', url); updatePreview(); },
+  onRemove: () => { state.dimUrl = null; clearBox('box-dim'); updatePreview(); },
+});
+
+// ── Background Removal ────────────────────────────────
+let removing = false;
+
+q('btn-remove-bg').addEventListener('click', async () => {
+  if (removing || !state.productUrl || remainingUses() <= 0) return;
+  removing = true;
+
+  const btn = q('btn-remove-bg');
+  btn.disabled = true;
+  q('prog-bar').style.display = 'block';
+  q('prog-fill').style.width  = '20%';
+  q('bg-status').textContent  = '배경 제거 중...';
+
+  try {
+    const base64 = state.productUrl.split(',')[1];
+    q('prog-fill').style.width = '50%';
+
+    const res = await fetch('/api/removebg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_file_b64: base64 }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.errors?.[0]?.title || err.error || `HTTP ${res.status}`);
+    }
+
+    q('prog-fill').style.width = '90%';
+    const url = await blobToDataUrl(await res.blob());
+    state.bgRemovedUrl = url;
+
+    setBoxImage('box-product', url);
+    incrementUsage(); // decrement counter on success
+    q('prog-fill').style.width  = '100%';
+    q('bg-status').textContent  = '✅ 배경 제거 완료!';
+    setTimeout(() => { q('prog-bar').style.display = 'none'; q('prog-fill').style.width = '0%'; }, 1500);
+    updatePreview();
+
+  } catch(e) {
+    console.error(e);
+    q('bg-status').textContent  = `⚠️ 오류: ${e.message}`;
+    q('prog-bar').style.display = 'none';
+    q('prog-fill').style.width  = '0%';
+  }
+
+  btn.disabled = (remainingUses() <= 0);
+  removing = false;
+});
+
+// ── Symbol chip 삽입 helper ───────────────────────────
+function insertSymbol(inp, sym) {
+  const start = inp.selectionStart ?? inp.value.length;
+  const end   = inp.selectionEnd   ?? inp.value.length;
+  inp.value = inp.value.slice(0, start) + sym + inp.value.slice(end);
+  inp.selectionStart = inp.selectionEnd = start + sym.length;
+  inp.focus();
+  inp.dispatchEvent(new Event('input'));
+}
+
+// ── Custom Options ────────────────────────────────────
+function renderCustomOptions() {
+  const container = q('custom-options-list');
+  container.innerHTML = '';
+  customOptions.forEach((opt, i) => {
+    const row = document.createElement('div');
+    row.className = 'custom-opt-row';
+    row.innerHTML = `
+      <input class="key-input" type="text" placeholder="타이틀" value="${esc(opt.key)}">
+      <div class="val-wrap">
+        <input class="val-input" type="text" placeholder="내용" value="${esc(opt.val)}">
+        <div class="symbol-chips size-chips" style="display:none;">
+          <button class="symbol-chip" data-sym="Ø">Ø</button>
+          <button class="symbol-chip" data-sym="×">×</button>
+          <button class="symbol-chip" data-sym="φ">φ</button>
+        </div>
+      </div>
+      <button class="btn-remove-opt" title="삭제">×</button>
+    `;
+
+    const keyInp  = row.querySelector('.key-input');
+    const valInp  = row.querySelector('.val-input');
+    const chips   = row.querySelector('.size-chips');
+
+    function updateChips() {
+      chips.style.display = keyInp.value.includes('사이즈') ? 'flex' : 'none';
+    }
+    updateChips(); // 초기 상태 반영
+
+    keyInp.addEventListener('input', e => { customOptions[i].key = e.target.value; updateChips(); updatePreview(); });
+    valInp.addEventListener('input', e => { customOptions[i].val = e.target.value; updatePreview(); });
+    row.querySelector('.btn-remove-opt').addEventListener('click', () => { customOptions.splice(i, 1); renderCustomOptions(); updatePreview(); });
+
+    chips.querySelectorAll('.symbol-chip').forEach(btn => {
+      btn.addEventListener('click', () => insertSymbol(valInp, btn.dataset.sym));
+    });
+
+    container.appendChild(row);
+  });
+}
+
+q('btn-add-opt').addEventListener('click', () => {
+  customOptions.push({ key: '', val: '' });
+  renderCustomOptions();
+  // Focus first empty key input
+  const rows = q('custom-options-list').querySelectorAll('.key-input');
+  rows[rows.length - 1]?.focus();
+});
+
+// ── Form Change Listeners ─────────────────────────────
+['f-cat','f-name','f-partno']
+  .forEach(id => { q(id)?.addEventListener('input', updatePreview); });
+q('f-cat').addEventListener('change', updatePreview);
+
+// ── Gather Form Data ──────────────────────────────────
+function gatherForm() {
+  return {
+    category:  q('f-cat').value  || 'DOWN LIGHT',
+    name:      q('f-name').value || '',
+    partno:    q('f-partno').value || '',
+    customs:   customOptions.filter(o => o.key || o.val),
+    imageUrl:  state.bgRemovedUrl || state.productUrl || '',
+    dimUrl:    state.dimUrl || '',
+  };
+}
+
+// ── Build Spec Sheet ──────────────────────────────────
+function buildSpec(container, d) {
+  container.innerHTML = '';
+
+  const hasDim  = !!d.dimUrl;
+  const photoH  = hasDim ? 316 : 632;
+
+  // Header
+  container.insertAdjacentHTML('beforeend', `
+    <div class="sc-header">
+      <div class="sc-category">${esc(d.category)}</div>
+    </div>
+  `);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'sc-body';
+
+  // ── Left ──────────────────────────────────────────
+  const left = document.createElement('div');
+  left.className = 'sc-left';
+
+  const photoArea = document.createElement('div');
+  photoArea.className = 'sc-photo-area';
+  photoArea.style.height = photoH + 'px';
+  if (d.imageUrl) {
+    const img = document.createElement('img');
+    img.src = d.imageUrl;
+    img.style.maxHeight = (photoH - 12) + 'px';
+    img.crossOrigin = 'anonymous';
+    photoArea.appendChild(img);
+  }
+  left.appendChild(photoArea);
+
+  if (hasDim) {
+    const dimArea = document.createElement('div');
+    dimArea.className = 'sc-dim-area';
+    const img = document.createElement('img');
+    img.src = d.dimUrl;
+    img.crossOrigin = 'anonymous';
+    dimArea.appendChild(img);
+    left.appendChild(dimArea);
+  }
+
+  body.appendChild(left);
+
+  // ── Right ─────────────────────────────────────────
+  const right = document.createElement('div');
+  right.className = 'sc-right';
+
+  // Header
+  right.insertAdjacentHTML('beforeend', `
+    <div class="sc-spec-header">
+      <div class="sc-prod-name">${esc(d.name || '제품명')}</div>
+      ${d.partno ? `<div class="sc-prod-partno">${esc(d.partno)}</div>` : ''}
+    </div>
+  `);
+
+  // Spec rows — custom options only
+  const allRows = d.customs.map(o => ({ key: o.key, val: o.val }));
+
+  // Pad to at least 5 rows
+  while (allRows.length < 5) allRows.push({ key: '', val: '' });
+
+  const rowsEl = document.createElement('div');
+  rowsEl.className = 'sc-rows';
+  allRows.forEach(r => {
+    rowsEl.insertAdjacentHTML('beforeend', `
+      <div class="sc-row">
+        <div class="sc-key">${esc(r.key)}</div>
+        <div class="sc-val">${esc(r.val)}</div>
+      </div>
+    `);
+  });
+  right.appendChild(rowsEl);
+
+  body.appendChild(right);
+  container.appendChild(body);
+}
+
+function updatePreview() {
+  const data = gatherForm();
+  buildSpec(q('spec-preview'), data);
+  scalePreview();
+}
+
+// ── Scale Preview ─────────────────────────────────────
+function scalePreview() {
+  const panel   = q('preview-panel');
+  const wrapper = q('preview-wrapper');
+  const pw = panel.clientWidth  - 48;
+  const ph = panel.clientHeight - 52;
+  const scale = Math.min(pw / 1000, ph / 700, 1);
+  wrapper.style.transform = `scale(${scale})`;
+  wrapper.style.width  = '1000px';
+  wrapper.style.height = '700px';
+}
+window.addEventListener('resize', scalePreview);
+
+// ── Download PNG ──────────────────────────────────────
+q('btn-download').addEventListener('click', async () => {
+  const btn = q('btn-download');
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+
+  // Temporarily remove CSS transform so html2canvas captures at true 1000×700
+  const wrapper = q('preview-wrapper');
+  const savedTransform = wrapper.style.transform;
+  wrapper.style.transform = 'none';
+
+  try {
+    await document.fonts.ready;
+    if (typeof window.html2canvas !== 'function') {
+      throw new Error('html2canvas 라이브러리 로드 실패. 네트워크 연결을 확인하거나 페이지를 새로고침해 주세요.');
+    }
+    const canvas = await window.html2canvas(q('spec-preview'), {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      width: 1000,
+      height: 700,
+      logging: false,
+      windowWidth: 1200,
+      windowHeight: 900,
+    });
+    const name = q('f-name').value || '스펙시트';
+    const link = document.createElement('a');
+    link.download = `spec_${name}_${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('✅ PNG 다운로드 완료!');
+  } catch(e) {
+    console.error('[PNG error]', e);
+    showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
+  } finally {
+    wrapper.style.transform = savedTransform;
+    btn.textContent = 'PNG 다운로드';
+    btn.disabled = false;
+  }
+});
+
+// ── Download PDF ──────────────────────────────────────
+q('btn-download-pdf').addEventListener('click', async () => {
+  const btn = q('btn-download-pdf');
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+
+  const wrapper = q('preview-wrapper');
+  const savedTransform = wrapper.style.transform;
+  wrapper.style.transform = 'none';
+
+  try {
+    await document.fonts.ready;
+    if (typeof window.html2canvas !== 'function') {
+      throw new Error('html2canvas 로드 실패. 페이지를 새로고침해 주세요.');
+    }
+    if (!window.jspdf?.jsPDF) {
+      throw new Error('jsPDF 로드 실패. 페이지를 새로고침해 주세요.');
+    }
+
+    const canvas = await window.html2canvas(q('spec-preview'), {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      width: 1000,
+      height: 700,
+      logging: false,
+      windowWidth: 1200,
+      windowHeight: 900,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+    // A4 landscape: 297 × 210mm  /  image ratio: 1000:700
+    const pageW = 297, pageH = 210;
+    const imgRatio = 1000 / 700;          // ≈ 1.4286
+    const maxW = pageW - 10, maxH = pageH - 10;  // 5mm 여백
+    let imgW = maxW, imgH = imgW / imgRatio;
+    if (imgH > maxH) { imgH = maxH; imgW = imgH * imgRatio; }
+    const imgX = (pageW - imgW) / 2;
+    const imgY = (pageH - imgH) / 2;
+
+    pdf.addImage(imgData, 'JPEG', imgX, imgY, imgW, imgH);
+
+    const name = q('f-name').value || '스펙시트';
+    pdf.save(`spec_${name}_${Date.now()}.pdf`);
+    showToast('✅ PDF 다운로드 완료!');
+  } catch(e) {
+    console.error('[PDF error]', e);
+    showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
+  } finally {
+    wrapper.style.transform = savedTransform;
+    btn.textContent = 'PDF 다운로드';
+    btn.disabled = false;
+  }
+});
+
+// ── Reset ─────────────────────────────────────────────
+q('btn-reset').addEventListener('click', () => {
+  if (!confirm('입력한 모든 정보를 초기화할까요?')) return;
+  state.productUrl = state.bgRemovedUrl = state.dimUrl = null;
+  clearBox('box-product');
+  clearBox('box-dim');
+  q('btn-remove-bg').disabled = true;
+  q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
+  customOptions = [];
+  renderCustomOptions();
+  ['f-name','f-partno']
+    .forEach(id => { const el = q(id); if (el) el.value = ''; });
+  q('f-cat').selectedIndex = 0;
+  updatePreview();
+});
+
+// (정적 symbol chips 제거됨 — 동적 chips는 renderCustomOptions 내에서 처리)
+
+// ── Init ──────────────────────────────────────────────
+renderCounter();
+updatePreview();
+
+</script>
+</body>
+</html>
