@@ -30,7 +30,6 @@ body {
   position: relative;
   z-index: 50;
 }
-.app-header .logo { font-size: 20px; }
 .app-header h1 { color: #fff; font-size: 16px; font-weight: 700; }
 
 /* ===== MAIN LAYOUT: preview LEFT / form RIGHT ===== */
@@ -47,10 +46,18 @@ body {
   align-items: center;
   justify-content: center;
   background: #e2e5e9;
-  padding: 24px;
+  padding: 20px 24px;
   overflow: hidden;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
+}
+
+/* Top bar: label + mode toggle */
+.preview-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 .preview-label {
   font-size: 10px;
@@ -59,10 +66,63 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
+.mode-toggle {
+  display: flex;
+  background: #b0b5be;
+  border-radius: 20px;
+  padding: 2px;
+}
+.mode-btn {
+  padding: 2px 9px;
+  border: none;
+  border-radius: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255,255,255,0.75);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.mode-btn.active {
+  background: white;
+  color: #111827;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* Preview wrapper */
 .preview-wrapper {
   transform-origin: top center;
   box-shadow: 0 8px 40px rgba(0,0,0,0.22);
   flex-shrink: 0;
+}
+
+/* Dim tool toolbar (below preview) */
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.tool-btn {
+  padding: 5px 12px;
+  background: #c9cdd4;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  color: #374151;
+  font-weight: 700;
+}
+.tool-btn:hover { background: #b8bcc3; }
+.tool-btn.active { background: #dbeafe; color: #1d4ed8; }
+.tool-hint-text {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 /* ═══ FORM PANEL (RIGHT) ════════════════════════════ */
@@ -146,41 +206,37 @@ input[type="file"] { display: none; }
   overflow: hidden;
   min-height: 80px;
 }
-/* Empty state */
 .img-upload-box .upload-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 18px 12px;
+  padding: 14px 8px;
   gap: 4px;
   pointer-events: none;
 }
-.img-upload-box .upload-empty .icon { font-size: 22px; }
 .img-upload-box .upload-empty .register-btn {
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 5px 14px;
-  font-size: 12px;
+  padding: 4px 12px;
+  font-size: 11px;
   font-weight: 700;
-  margin-top: 4px;
+  margin-top: 2px;
   font-family: inherit;
   pointer-events: none;
 }
 .img-upload-box .upload-empty .sub-hint {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
+  text-align: center;
 }
-/* Hover state (empty) */
 .img-upload-box:not(.has-image):hover {
   border-color: #3b82f6;
   background: #eff6ff;
 }
 .img-upload-box.over { border-color: #3b82f6; background: #eff6ff; }
-
-/* Filled state */
 .img-upload-box.has-image {
   border-style: solid;
   border-color: #e5e7eb;
@@ -190,11 +246,10 @@ input[type="file"] { display: none; }
 .img-upload-box img {
   display: block;
   max-width: 100%;
-  max-height: 110px;
+  max-height: 90px;
   object-fit: contain;
-  margin: 8px auto;
+  margin: 6px auto;
 }
-/* Hover overlay (filled only) */
 .img-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -210,8 +265,8 @@ input[type="file"] { display: none; }
   background: white;
   border: none;
   border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 12px;
+  padding: 4px 10px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
@@ -273,6 +328,40 @@ input[type="file"] { display: none; }
   transition: width 0.3s;
 }
 
+/* ===== DIM GRID (2-column for form) ===== */
+.dim-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.dim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.dim-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dim-col-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.dim-rmbg-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
 /* ===== CUSTOM OPTIONS ===== */
 .custom-opt-row {
   display: flex;
@@ -298,7 +387,7 @@ input[type="file"] { display: none; }
   transition: border-color 0.2s;
 }
 .custom-opt-row input:focus { border-color: #3b82f6; }
-.custom-opt-row input.key-input { flex: 0 0 120px; }
+.custom-opt-row input.key-input { flex: 0 0 110px; }
 .custom-opt-row input.val-input { width: 100%; }
 .btn-remove-opt {
   flex-shrink: 0;
@@ -356,11 +445,7 @@ input[type="file"] { display: none; }
   transition: all 0.15s;
   line-height: 1.5;
 }
-.preset-tag:hover {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #1d4ed8;
-}
+.preset-tag:hover { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
 
 /* ===== BUTTONS ===== */
 .btn {
@@ -387,7 +472,7 @@ input[type="file"] { display: none; }
   transform: translateX(-50%) translateY(16px);
   background: #111827; color: white; padding: 10px 20px;
   border-radius: 9px; font-size: 14px; font-weight: 500;
-  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999;
+  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 9999;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -402,6 +487,7 @@ input[type="file"] { display: none; }
   flex-direction: column;
   font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
   overflow: hidden;
+  position: relative; /* needed for SVG overlay */
 }
 
 /* ── Header: 1000 × 68px ─────────────────────────────── */
@@ -412,7 +498,6 @@ input[type="file"] { display: none; }
   display: flex;
   align-items: flex-end;
   padding: 0 32px 10px 32px;
-  /* 930px 1px 라인 — 중앙정렬, border-bottom 대신 background-image 사용 */
   background-image: linear-gradient(#111, #111);
   background-size: 930px 1px;
   background-position: center bottom;
@@ -455,20 +540,40 @@ input[type="file"] { display: none; }
   max-width: 470px;
   object-fit: contain;
 }
+
+/* Dim area — single or two-column */
 .sc-dim-area {
   width: 500px;
   height: 316px;
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
   border-top: 1px solid #e8e8e8;
   overflow: hidden;
   background: #ffffff;
 }
-.sc-dim-area img {
-  max-width: 470px;
+.dim-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 1;
+}
+.sc-dim-area .dim-wrap img {
+  max-width: 460px;
   max-height: 300px;
+  object-fit: contain;
+}
+.sc-dim-area.two-images .dim-wrap:first-child {
+  border-right: 1px solid #e8e8e8;
+  flex: 0 0 249px;
+}
+.sc-dim-area.two-images .dim-wrap:last-child {
+  flex: 0 0 249px;
+}
+.sc-dim-area.two-images .dim-wrap img {
+  max-width: 228px;
+  max-height: 296px;
   object-fit: contain;
 }
 
@@ -501,11 +606,7 @@ input[type="file"] { display: none; }
 
 /* ===== SYMBOL CHIPS ===== */
 .input-with-chips { display: flex; flex-direction: column; gap: 5px; }
-.symbol-chips {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
+.symbol-chips { display: flex; gap: 5px; flex-wrap: wrap; }
 .symbol-chip {
   padding: 3px 10px;
   background: #f3f4f6;
@@ -519,11 +620,8 @@ input[type="file"] { display: none; }
   transition: all 0.15s;
   line-height: 1.4;
 }
-.symbol-chip:hover {
-  background: #e0e7ff;
-  border-color: #6366f1;
-  color: #4338ca;
-}
+.symbol-chip:hover { background: #e0e7ff; border-color: #6366f1; color: #4338ca; }
+
 .sc-rows {
   display: flex;
   flex-direction: column;
@@ -562,6 +660,46 @@ input[type="file"] { display: none; }
   line-height: 1.4;
   word-break: keep-all;
 }
+
+/* =======================================================
+   DARK MODE — spec card
+   ======================================================= */
+.spec-card.dark { background: #0f172a; }
+.spec-card.dark .sc-header {
+  background-image: linear-gradient(#64748b, #64748b);
+}
+.spec-card.dark .sc-category { color: #e2e8f0; }
+.spec-card.dark .sc-left { border-right-color: #334155; }
+.spec-card.dark .sc-photo-area { background: #0f172a; }
+.spec-card.dark .sc-dim-area {
+  background: #0f172a;
+  border-top-color: #334155;
+}
+.spec-card.dark .sc-dim-area.two-images .dim-wrap:first-child {
+  border-right-color: #334155;
+}
+.spec-card.dark .sc-spec-header { border-bottom-color: #64748b; }
+.spec-card.dark .sc-prod-name { color: #f1f5f9; }
+.spec-card.dark .sc-prod-partno { color: #94a3b8; }
+.spec-card.dark .sc-row { border-bottom-color: #334155; }
+.spec-card.dark .sc-key { color: #cbd5e1; border-right-color: #334155; }
+.spec-card.dark .sc-val { color: #e2e8f0; }
+
+/* =======================================================
+   DIMENSION SVG OVERLAY
+   ======================================================= */
+#dim-svg-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 1000px; height: 700px;
+  pointer-events: none;
+  z-index: 20;
+  overflow: visible;
+}
+#dim-svg-overlay.tool-active {
+  pointer-events: all;
+  cursor: crosshair;
+}
 </style>
 </head>
 <body>
@@ -576,10 +714,27 @@ input[type="file"] { display: none; }
 
   <!-- ══ PREVIEW PANEL (LEFT) ══════════════════════════ -->
   <div class="preview-panel" id="preview-panel">
-    <div class="preview-label">라이브 프리뷰</div>
+
+    <!-- Top bar: "라이브 프리뷰" + Light/Dark toggle -->
+    <div class="preview-top-bar">
+      <div class="preview-label">라이브 프리뷰</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-mode-light">☀ Light</button>
+        <button class="mode-btn" id="btn-mode-dark">🌙 Dark</button>
+      </div>
+    </div>
+
+    <!-- Scaled spec-card preview -->
     <div class="preview-wrapper" id="preview-wrapper">
       <div id="spec-preview" class="spec-card"></div>
     </div>
+
+    <!-- Dimension tool toolbar -->
+    <div class="preview-toolbar" id="preview-toolbar">
+      <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수</button>
+      <span class="tool-hint-text" id="tool-hint-text"></span>
+    </div>
+
   </div>
 
   <!-- ══ FORM PANEL (RIGHT) ════════════════════════════ -->
@@ -589,6 +744,7 @@ input[type="file"] { display: none; }
       <!-- 이미지 -->
       <div class="section-label">이미지</div>
 
+      <!-- 제품 이미지 -->
       <div class="form-group">
         <label>제품 이미지 *</label>
         <div class="img-upload-box" id="box-product">
@@ -620,20 +776,46 @@ input[type="file"] { display: none; }
         <button class="btn btn-primary btn-sm" id="btn-remove-bg" disabled>배경 제거</button>
       </div>
 
-      <!-- 치수 이미지 -->
+      <!-- 치수 이미지 (최대 2장) -->
       <div class="form-group" style="margin-top:12px;">
-        <label>치수 이미지 <span style="font-weight:400;text-transform:none;color:#9ca3af;">(선택)</span></label>
-        <div class="img-upload-box" id="box-dim">
-          <div class="upload-empty">
-            <button class="register-btn" tabindex="-1">이미지 등록</button>
-            <span class="sub-hint">없으면 제품 사진이 전체 표시</span>
+        <label>치수 이미지 <span style="font-weight:400;text-transform:none;color:#9ca3af;">(선택 · 최대 2장)</span></label>
+        <div class="dim-grid">
+
+          <!-- 치수 1 -->
+          <div class="dim-col">
+            <div class="dim-col-lbl">치수 1</div>
+            <div class="img-upload-box" id="box-dim1">
+              <div class="upload-empty">
+                <button class="register-btn" tabindex="-1">이미지 등록</button>
+                <span class="sub-hint">없으면 전체 표시</span>
+              </div>
+              <div class="img-overlay">
+                <button class="img-overlay-btn" id="ovl-replace-dim1">교체</button>
+                <button class="img-overlay-btn danger" id="ovl-remove-dim1">삭제</button>
+              </div>
+            </div>
+            <input type="file" id="fi-dim1" accept="image/*">
+            <button class="btn btn-primary btn-sm dim-rmbg-btn" id="btn-dim1-rmbg" disabled>배경 제거</button>
           </div>
-          <div class="img-overlay">
-            <button class="img-overlay-btn" id="ovl-replace-dim">교체</button>
-            <button class="img-overlay-btn danger" id="ovl-remove-dim">삭제</button>
+
+          <!-- 치수 2 -->
+          <div class="dim-col">
+            <div class="dim-col-lbl">치수 2</div>
+            <div class="img-upload-box" id="box-dim2">
+              <div class="upload-empty">
+                <button class="register-btn" tabindex="-1">이미지 등록</button>
+                <span class="sub-hint">2번째 치수</span>
+              </div>
+              <div class="img-overlay">
+                <button class="img-overlay-btn" id="ovl-replace-dim2">교체</button>
+                <button class="img-overlay-btn danger" id="ovl-remove-dim2">삭제</button>
+              </div>
+            </div>
+            <input type="file" id="fi-dim2" accept="image/*">
+            <button class="btn btn-primary btn-sm dim-rmbg-btn" id="btn-dim2-rmbg" disabled>배경 제거</button>
           </div>
+
         </div>
-        <input type="file" id="fi-dim" accept="image/*">
       </div>
 
       <!-- 제품 정보 -->
@@ -696,15 +878,31 @@ input[type="file"] { display: none; }
 
 // ── State ─────────────────────────────────────────────
 const state = {
-  productUrl:   null,
-  bgRemovedUrl: null,
-  dimUrl:       null,
+  productUrl:       null,
+  bgRemovedUrl:     null,
+  dimUrl1:          null,
+  bgRemovedDimUrl1: null,
+  dimUrl2:          null,
+  bgRemovedDimUrl2: null,
+  darkMode:         false,
 };
 
-let customOptions = []; // [{key, val}]
+let customOptions = [];
+
+// Dimension drawing state
+let dimensions    = []; // [{id, x1, y1, x2, y2, label}]
+let dimIdCounter  = 0;
+let dimToolActive = false;
+let pendingPoint  = null; // {x, y} — first point waiting for second
+let dimLabelInput = null; // floating input currently shown
 
 // ── DOM ───────────────────────────────────────────────
 const q = id => document.getElementById(id);
+
+// ── Persistent SVG overlay (survives buildSpec innerHTML clear) ──
+const dimSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+dimSvg.id = 'dim-svg-overlay';
+dimSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 // ── Helpers ───────────────────────────────────────────
 function esc(s) {
@@ -728,12 +926,12 @@ function showToast(msg) {
 }
 
 // ── remove.bg Usage Counter ───────────────────────────
-const USAGE_KEY = 'rmbg_usage';
+const USAGE_KEY    = 'rmbg_usage';
 const MONTHLY_LIMIT = 50;
 
 function getUsage() {
-  const raw  = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
-  const now  = new Date();
+  const raw   = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
+  const now   = new Date();
   const month = `${now.getFullYear()}-${now.getMonth()}`;
   if (raw.month !== month) { raw.month = month; raw.used = 0; }
   return raw;
@@ -753,9 +951,7 @@ function renderCounter() {
   el.classList.remove('low','empty');
   if (rem === 0)      el.classList.add('empty');
   else if (rem <= 10) el.classList.add('low');
-
-  // Next reset info
-  const now = new Date();
+  const now  = new Date();
   const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   q('rmbg-reset-info').textContent =
     `매월 1일 갱신 · 다음 갱신: ${next.getMonth()+1}월 ${next.getDate()}일`;
@@ -773,24 +969,20 @@ function setupUpload({ boxId, inputId, onLoad, onRemove }) {
     r.readAsDataURL(file);
   }
 
-  // Click box → open picker (unless clicking overlay buttons)
   box.addEventListener('click', e => {
     if (e.target.classList.contains('img-overlay-btn') || e.target.classList.contains('register-btn')) return;
     if (box.classList.contains('has-image') && e.target.closest('.img-overlay')) return;
     inp.click();
   });
-  // Register btn inside upload-empty
   const registerBtn = box.querySelector('.register-btn');
   if (registerBtn) registerBtn.addEventListener('click', e => { e.stopPropagation(); inp.click(); });
 
   inp.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); inp.value = ''; });
 
-  // Drag & drop
   box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('over'); });
   box.addEventListener('dragleave', () => box.classList.remove('over'));
   box.addEventListener('drop', e => { e.preventDefault(); box.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
 
-  // Overlay buttons
   const replaceBtn = box.querySelector('[id^="ovl-replace"]');
   const removeBtn  = box.querySelector('[id^="ovl-remove"]');
   if (replaceBtn) replaceBtn.addEventListener('click', e => { e.stopPropagation(); inp.click(); });
@@ -833,20 +1025,48 @@ setupUpload({
   },
 });
 
-// ── Dimension Image ───────────────────────────────────
+// ── Dimension Image 1 ─────────────────────────────────
 setupUpload({
-  boxId: 'box-dim', inputId: 'fi-dim',
-  onLoad: url => { state.dimUrl = url; setBoxImage('box-dim', url); updatePreview(); },
-  onRemove: () => { state.dimUrl = null; clearBox('box-dim'); updatePreview(); },
+  boxId: 'box-dim1', inputId: 'fi-dim1',
+  onLoad: url => {
+    state.dimUrl1 = url;
+    state.bgRemovedDimUrl1 = null;
+    setBoxImage('box-dim1', url);
+    q('btn-dim1-rmbg').disabled = (remainingUses() === 0);
+    updatePreview();
+  },
+  onRemove: () => {
+    state.dimUrl1 = state.bgRemovedDimUrl1 = null;
+    clearBox('box-dim1');
+    q('btn-dim1-rmbg').disabled = true;
+    updatePreview();
+  },
 });
 
-// ── Background Removal ────────────────────────────────
+// ── Dimension Image 2 ─────────────────────────────────
+setupUpload({
+  boxId: 'box-dim2', inputId: 'fi-dim2',
+  onLoad: url => {
+    state.dimUrl2 = url;
+    state.bgRemovedDimUrl2 = null;
+    setBoxImage('box-dim2', url);
+    q('btn-dim2-rmbg').disabled = (remainingUses() === 0);
+    updatePreview();
+  },
+  onRemove: () => {
+    state.dimUrl2 = state.bgRemovedDimUrl2 = null;
+    clearBox('box-dim2');
+    q('btn-dim2-rmbg').disabled = true;
+    updatePreview();
+  },
+});
+
+// ── Product Background Removal ────────────────────────
 let removing = false;
 
 q('btn-remove-bg').addEventListener('click', async () => {
   if (removing || !state.productUrl || remainingUses() <= 0) return;
   removing = true;
-
   const btn = q('btn-remove-bg');
   btn.disabled = true;
   q('prog-bar').style.display = 'block';
@@ -856,41 +1076,316 @@ q('btn-remove-bg').addEventListener('click', async () => {
   try {
     const base64 = state.productUrl.split(',')[1];
     q('prog-fill').style.width = '50%';
-
     const res = await fetch('/api/removebg', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image_file_b64: base64 }),
     });
-
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.errors?.[0]?.title || err.error || `HTTP ${res.status}`);
     }
-
     q('prog-fill').style.width = '90%';
     const url = await blobToDataUrl(await res.blob());
     state.bgRemovedUrl = url;
-
     setBoxImage('box-product', url);
-    incrementUsage(); // decrement counter on success
+    incrementUsage();
     q('prog-fill').style.width  = '100%';
     q('bg-status').textContent  = '✅ 배경 제거 완료!';
     setTimeout(() => { q('prog-bar').style.display = 'none'; q('prog-fill').style.width = '0%'; }, 1500);
     updatePreview();
-
   } catch(e) {
     console.error(e);
     q('bg-status').textContent  = `⚠️ 오류: ${e.message}`;
     q('prog-bar').style.display = 'none';
     q('prog-fill').style.width  = '0%';
   }
-
   btn.disabled = (remainingUses() <= 0);
   removing = false;
 });
 
-// ── Symbol chip 삽입 helper ───────────────────────────
+// ── Dimension Image Background Removal ───────────────
+async function removeBgForDim(dimNum) {
+  const url = dimNum === 1 ? state.dimUrl1 : state.dimUrl2;
+  if (!url || remainingUses() <= 0) return;
+  const btn = q(`btn-dim${dimNum}-rmbg`);
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '처리 중...';
+  try {
+    const base64 = url.split(',')[1];
+    const res = await fetch('/api/removebg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_file_b64: base64 }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.errors?.[0]?.title || err.error || `HTTP ${res.status}`);
+    }
+    const newUrl = await blobToDataUrl(await res.blob());
+    if (dimNum === 1) { state.bgRemovedDimUrl1 = newUrl; setBoxImage('box-dim1', newUrl); }
+    else              { state.bgRemovedDimUrl2 = newUrl; setBoxImage('box-dim2', newUrl); }
+    incrementUsage();
+    showToast(`✅ 치수 ${dimNum} 배경 제거 완료!`);
+    updatePreview();
+  } catch(e) {
+    console.error(e);
+    showToast(`⚠️ 오류: ${e.message}`);
+  }
+  btn.textContent = orig;
+  btn.disabled = (remainingUses() <= 0);
+}
+q('btn-dim1-rmbg').addEventListener('click', () => removeBgForDim(1));
+q('btn-dim2-rmbg').addEventListener('click', () => removeBgForDim(2));
+
+// ── Light / Dark Mode Toggle ──────────────────────────
+q('btn-mode-light').addEventListener('click', () => {
+  state.darkMode = false;
+  q('btn-mode-light').classList.add('active');
+  q('btn-mode-dark').classList.remove('active');
+  updatePreview();
+});
+q('btn-mode-dark').addEventListener('click', () => {
+  state.darkMode = true;
+  q('btn-mode-dark').classList.add('active');
+  q('btn-mode-light').classList.remove('active');
+  updatePreview();
+});
+
+// ── Dimension Drawing Tool ────────────────────────────
+q('btn-dim-tool').addEventListener('click', () => {
+  dimToolActive = !dimToolActive;
+  q('btn-dim-tool').classList.toggle('active', dimToolActive);
+  dimSvg.classList.toggle('tool-active', dimToolActive);
+  if (dimToolActive) {
+    const hasDim = !!(state.dimUrl1 || state.dimUrl2);
+    q('tool-hint-text').textContent = hasDim
+      ? '치수 이미지 위 첫 번째 점 클릭'
+      : '치수 이미지를 먼저 등록하세요';
+    pendingPoint = null;
+  } else {
+    q('tool-hint-text').textContent = '';
+    pendingPoint = null;
+    if (dimLabelInput) { dimLabelInput.remove(); dimLabelInput = null; }
+  }
+  renderDimOverlay();
+});
+
+// SVG click → draw dimension line
+dimSvg.addEventListener('click', e => {
+  if (!dimToolActive) return;
+  // Convert screen coords to spec-card coords (1000×700 space)
+  const rect = q('spec-preview').getBoundingClientRect();
+  const x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
+  const y = Math.round((e.clientY - rect.top)  * 700  / rect.height);
+
+  if (!pendingPoint) {
+    pendingPoint = { x, y };
+    q('tool-hint-text').textContent = '두 번째 점을 클릭하세요 (ESC 취소)';
+    renderDimOverlay();
+  } else {
+    // Create dimension
+    const dim = { id: ++dimIdCounter, x1: pendingPoint.x, y1: pendingPoint.y, x2: x, y2: y, label: '' };
+    dimensions.push(dim);
+    pendingPoint = null;
+    q('tool-hint-text').textContent = '치수 이미지 위 첫 번째 점 클릭';
+    renderDimOverlay();
+    showDimLabelInput(dim);
+  }
+});
+
+// Cancel pending point with Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && dimToolActive && pendingPoint) {
+    pendingPoint = null;
+    q('tool-hint-text').textContent = '치수 이미지 위 첫 번째 점 클릭';
+    renderDimOverlay();
+  }
+});
+
+// ── Dimension Label Input ─────────────────────────────
+function showDimLabelInput(dim) {
+  if (dimLabelInput) { dimLabelInput.remove(); dimLabelInput = null; }
+
+  const rect  = q('spec-preview').getBoundingClientRect();
+  const scale = rect.width / 1000;
+  const mx = rect.left + ((dim.x1 + dim.x2) / 2) * scale;
+  const my = rect.top  + ((dim.y1 + dim.y2) / 2) * scale;
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = '치수 (예: 450mm)';
+  inp.style.cssText = `
+    position: fixed;
+    left: ${mx - 55}px;
+    top: ${my - 14}px;
+    width: 110px;
+    z-index: 9998;
+    background: rgba(255,255,255,0.97);
+    border: 2px solid #ef4444;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ef4444;
+    text-align: center;
+    outline: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  `;
+
+  document.body.appendChild(inp);
+  dimLabelInput = inp;
+  setTimeout(() => inp.focus(), 0);
+
+  let handled = false;
+  function confirmLabel() {
+    if (handled) return; handled = true;
+    const label = inp.value.trim();
+    const d = dimensions.find(d => d.id === dim.id);
+    if (d) d.label = label;
+    if (!label) dimensions = dimensions.filter(d => d.id !== dim.id);
+    if (inp.parentNode) inp.remove();
+    if (dimLabelInput === inp) dimLabelInput = null;
+    renderDimOverlay();
+  }
+  function cancelLabel() {
+    if (handled) return; handled = true;
+    dimensions = dimensions.filter(d => d.id !== dim.id);
+    if (inp.parentNode) inp.remove();
+    if (dimLabelInput === inp) dimLabelInput = null;
+    renderDimOverlay();
+  }
+  inp.addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'Enter')  confirmLabel();
+    if (e.key === 'Escape') cancelLabel();
+  });
+  inp.addEventListener('blur', confirmLabel);
+}
+
+// ── Render Dimension SVG Overlay ─────────────────────
+function renderDimOverlay() {
+  dimSvg.innerHTML = '';
+  const ns         = 'http://www.w3.org/2000/svg';
+  const isDark     = state.darkMode;
+  const lineColor  = isDark ? '#ffffff' : '#ef4444';
+  const bgFill     = isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.93)';
+
+  dimensions.forEach(dim => {
+    const g = document.createElementNS(ns, 'g');
+
+    // Line
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', dim.x1); line.setAttribute('y1', dim.y1);
+    line.setAttribute('x2', dim.x2); line.setAttribute('y2', dim.y2);
+    line.setAttribute('stroke', lineColor);
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-linecap', 'round');
+    g.appendChild(line);
+
+    // Tick marks at endpoints (perpendicular to line)
+    const dx  = dim.x2 - dim.x1;
+    const dy  = dim.y2 - dim.y1;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if (len > 0) {
+      const nx = -dy / len * 7;
+      const ny =  dx / len * 7;
+      [[dim.x1, dim.y1], [dim.x2, dim.y2]].forEach(([px, py]) => {
+        const tick = document.createElementNS(ns, 'line');
+        tick.setAttribute('x1', px + nx); tick.setAttribute('y1', py + ny);
+        tick.setAttribute('x2', px - nx); tick.setAttribute('y2', py - ny);
+        tick.setAttribute('stroke', lineColor);
+        tick.setAttribute('stroke-width', '2');
+        tick.setAttribute('stroke-linecap', 'round');
+        g.appendChild(tick);
+      });
+    }
+
+    // Label background + text at midpoint
+    if (dim.label) {
+      const mx = (dim.x1 + dim.x2) / 2;
+      const my = (dim.y1 + dim.y2) / 2;
+      const labelW = Math.max(dim.label.length * 8 + 20, 44);
+
+      const bgRect = document.createElementNS(ns, 'rect');
+      bgRect.setAttribute('x', mx - labelW / 2); bgRect.setAttribute('y', my - 12);
+      bgRect.setAttribute('width', labelW);       bgRect.setAttribute('height', 22);
+      bgRect.setAttribute('rx', '5');
+      bgRect.setAttribute('fill', bgFill);
+      bgRect.setAttribute('stroke', lineColor);
+      bgRect.setAttribute('stroke-width', '1.5');
+      g.appendChild(bgRect);
+
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', mx); text.setAttribute('y', my + 5);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-size', '12');
+      text.setAttribute('font-weight', '700');
+      text.setAttribute('font-family', 'Noto Sans KR, sans-serif');
+      text.setAttribute('fill', lineColor);
+      text.textContent = dim.label;
+      g.appendChild(text);
+
+      // Delete × button (only when tool is active)
+      if (dimToolActive) {
+        const bx = mx + labelW / 2 + 10;
+        const by = my;
+        const delG = document.createElementNS(ns, 'g');
+        delG.style.cursor = 'pointer';
+
+        const delC = document.createElementNS(ns, 'circle');
+        delC.setAttribute('cx', bx); delC.setAttribute('cy', by);
+        delC.setAttribute('r', '9');
+        delC.setAttribute('fill', '#ef4444');
+        delG.appendChild(delC);
+
+        const delT = document.createElementNS(ns, 'text');
+        delT.setAttribute('x', bx); delT.setAttribute('y', by + 5);
+        delT.setAttribute('text-anchor', 'middle');
+        delT.setAttribute('font-size', '13');
+        delT.setAttribute('fill', 'white');
+        delT.setAttribute('font-weight', '700');
+        delT.setAttribute('pointer-events', 'none');
+        delT.textContent = '×';
+        delG.appendChild(delT);
+
+        const dimId = dim.id;
+        delG.addEventListener('click', e => {
+          e.stopPropagation();
+          dimensions = dimensions.filter(d => d.id !== dimId);
+          renderDimOverlay();
+        });
+        g.appendChild(delG);
+      }
+    }
+
+    // Endpoint dots
+    [[dim.x1, dim.y1], [dim.x2, dim.y2]].forEach(([px, py]) => {
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', px); dot.setAttribute('cy', py);
+      dot.setAttribute('r', '4');
+      dot.setAttribute('fill', lineColor);
+      g.appendChild(dot);
+    });
+
+    dimSvg.appendChild(g);
+  });
+
+  // Pending first point
+  if (pendingPoint) {
+    const dot = document.createElementNS(ns, 'circle');
+    dot.setAttribute('cx', pendingPoint.x);
+    dot.setAttribute('cy', pendingPoint.y);
+    dot.setAttribute('r', '5');
+    dot.setAttribute('fill', lineColor);
+    dot.setAttribute('opacity', '0.8');
+    dimSvg.appendChild(dot);
+  }
+}
+
+// ── Symbol chip helper ────────────────────────────────
 function insertSymbol(inp, sym) {
   const start = inp.selectionStart ?? inp.value.length;
   const end   = inp.selectionEnd   ?? inp.value.length;
@@ -919,29 +1414,22 @@ function renderCustomOptions() {
       </div>
       <button class="btn-remove-opt" title="삭제">×</button>
     `;
-
-    const keyInp  = row.querySelector('.key-input');
-    const valInp  = row.querySelector('.val-input');
-    const chips   = row.querySelector('.size-chips');
-
-    function updateChips() {
-      chips.style.display = keyInp.value.includes('사이즈') ? 'flex' : 'none';
-    }
-    updateChips(); // 초기 상태 반영
-
+    const keyInp = row.querySelector('.key-input');
+    const valInp = row.querySelector('.val-input');
+    const chips  = row.querySelector('.size-chips');
+    function updateChips() { chips.style.display = keyInp.value.includes('사이즈') ? 'flex' : 'none'; }
+    updateChips();
     keyInp.addEventListener('input', e => { customOptions[i].key = e.target.value; updateChips(); updatePreview(); });
     valInp.addEventListener('input', e => { customOptions[i].val = e.target.value; updatePreview(); });
     row.querySelector('.btn-remove-opt').addEventListener('click', () => { customOptions.splice(i, 1); renderCustomOptions(); updatePreview(); });
-
     chips.querySelectorAll('.symbol-chip').forEach(btn => {
       btn.addEventListener('click', () => insertSymbol(valInp, btn.dataset.sym));
     });
-
     container.appendChild(row);
   });
 }
 
-// ── Preset Tag 클릭 ───────────────────────────────────
+// ── Preset Tag clicks ─────────────────────────────────
 document.querySelectorAll('.preset-tag').forEach(btn => {
   btn.addEventListener('click', () => {
     customOptions.push({ key: btn.dataset.key, val: '' });
@@ -951,38 +1439,43 @@ document.querySelectorAll('.preset-tag').forEach(btn => {
     rows[rows.length - 1]?.focus();
   });
 });
-
 q('btn-add-opt').addEventListener('click', () => {
   customOptions.push({ key: '', val: '' });
   renderCustomOptions();
-  // Focus first empty key input
   const rows = q('custom-options-list').querySelectorAll('.key-input');
   rows[rows.length - 1]?.focus();
 });
 
 // ── Form Change Listeners ─────────────────────────────
-['f-cat','f-name','f-partno']
-  .forEach(id => { q(id)?.addEventListener('input', updatePreview); });
+['f-cat','f-name','f-partno'].forEach(id => { q(id)?.addEventListener('input', updatePreview); });
 q('f-cat').addEventListener('change', updatePreview);
 
 // ── Gather Form Data ──────────────────────────────────
 function gatherForm() {
   return {
-    category:  q('f-cat').value  || 'DOWN LIGHT',
-    name:      q('f-name').value || '',
-    partno:    q('f-partno').value || '',
-    customs:   customOptions.filter(o => o.key || o.val),
-    imageUrl:  state.bgRemovedUrl || state.productUrl || '',
-    dimUrl:    state.dimUrl || '',
+    category: q('f-cat').value  || 'DOWN LIGHT',
+    name:     q('f-name').value || '',
+    partno:   q('f-partno').value || '',
+    customs:  customOptions.filter(o => o.key || o.val),
+    imageUrl: state.bgRemovedUrl     || state.productUrl || '',
+    dim1Url:  state.bgRemovedDimUrl1 || state.dimUrl1    || '',
+    dim2Url:  state.bgRemovedDimUrl2 || state.dimUrl2    || '',
+    darkMode: state.darkMode,
   };
 }
 
 // ── Build Spec Sheet ──────────────────────────────────
 function buildSpec(container, d) {
   container.innerHTML = '';
+  // Apply dark mode class
+  if (d.darkMode) container.classList.add('dark');
+  else            container.classList.remove('dark');
 
-  const hasDim  = !!d.dimUrl;
-  const photoH  = hasDim ? 316 : 632;
+  const hasDim1   = !!d.dim1Url;
+  const hasDim2   = !!d.dim2Url;
+  const hasDim    = hasDim1 || hasDim2;
+  const hasTwoDim = hasDim1 && hasDim2;
+  const photoH    = hasDim ? 316 : 632;
 
   // Header
   container.insertAdjacentHTML('beforeend', `
@@ -1013,11 +1506,22 @@ function buildSpec(container, d) {
 
   if (hasDim) {
     const dimArea = document.createElement('div');
-    dimArea.className = 'sc-dim-area';
-    const img = document.createElement('img');
-    img.src = d.dimUrl;
-    img.crossOrigin = 'anonymous';
-    dimArea.appendChild(img);
+    dimArea.className = 'sc-dim-area' + (hasTwoDim ? ' two-images' : '');
+
+    const urls = hasTwoDim
+      ? [d.dim1Url, d.dim2Url]
+      : [hasDim1 ? d.dim1Url : d.dim2Url];
+
+    urls.forEach(url => {
+      const wrap = document.createElement('div');
+      wrap.className = 'dim-wrap';
+      const img = document.createElement('img');
+      img.src = url;
+      img.crossOrigin = 'anonymous';
+      wrap.appendChild(img);
+      dimArea.appendChild(wrap);
+    });
+
     left.appendChild(dimArea);
   }
 
@@ -1027,7 +1531,6 @@ function buildSpec(container, d) {
   const right = document.createElement('div');
   right.className = 'sc-right';
 
-  // Header
   right.insertAdjacentHTML('beforeend', `
     <div class="sc-spec-header">
       ${d.partno ? `<div class="sc-prod-partno">${esc(d.partno)}</div>` : ''}
@@ -1035,17 +1538,12 @@ function buildSpec(container, d) {
     </div>
   `);
 
-  // 자동 단위
   const UNIT_MAP = { '소비전력': 'W', 'lumen': 'lm', '색온도': 'K' };
-
-  // Spec rows — custom options only
-  const allRows = d.customs.map(o => {
+  const allRows  = d.customs.map(o => {
     const unit = UNIT_MAP[o.key.trim()];
-    const val = (unit && o.val.trim() && !o.val.trim().endsWith(unit))
-      ? o.val + unit : o.val;
+    const val  = (unit && o.val.trim() && !o.val.trim().endsWith(unit)) ? o.val + unit : o.val;
     return { key: o.key, val };
   });
-
 
   const rowsEl = document.createElement('div');
   rowsEl.className = 'sc-rows';
@@ -1063,9 +1561,14 @@ function buildSpec(container, d) {
   container.appendChild(body);
 }
 
+// ── Update Preview ────────────────────────────────────
 function updatePreview() {
   const data = gatherForm();
   buildSpec(q('spec-preview'), data);
+  // Re-attach SVG overlay (buildSpec clears innerHTML)
+  q('spec-preview').appendChild(dimSvg);
+  dimSvg.classList.toggle('tool-active', dimToolActive);
+  renderDimOverlay();
   scalePreview();
 }
 
@@ -1073,8 +1576,12 @@ function updatePreview() {
 function scalePreview() {
   const panel   = q('preview-panel');
   const wrapper = q('preview-wrapper');
+  const topBar  = document.querySelector('.preview-top-bar');
+  const toolbar = q('preview-toolbar');
+  const topH    = (topBar  ? topBar.offsetHeight  + 8 : 30);
+  const botH    = (toolbar ? toolbar.offsetHeight + 8 : 0);
   const pw = panel.clientWidth  - 48;
-  const ph = panel.clientHeight - 52;
+  const ph = panel.clientHeight - topH - botH - 40; // 40 = top+bot padding
   const scale = Math.min(pw / 1000, ph / 700, 1);
   wrapper.style.transform = `scale(${scale})`;
   wrapper.style.width  = '1000px';
@@ -1087,27 +1594,20 @@ q('btn-download').addEventListener('click', async () => {
   const btn = q('btn-download');
   btn.textContent = '⏳ 생성 중...';
   btn.disabled = true;
-
-  // Temporarily remove CSS transform so html2canvas captures at true 1000×700
   const wrapper = q('preview-wrapper');
   const savedTransform = wrapper.style.transform;
   wrapper.style.transform = 'none';
 
+  // Hide delete buttons in SVG before export
+  dimSvg.classList.remove('tool-active');
+
   try {
     await document.fonts.ready;
-    if (typeof window.html2canvas !== 'function') {
-      throw new Error('html2canvas 라이브러리 로드 실패. 네트워크 연결을 확인하거나 페이지를 새로고침해 주세요.');
-    }
+    if (typeof window.html2canvas !== 'function') throw new Error('html2canvas 로드 실패. 새로고침해 주세요.');
     const canvas = await window.html2canvas(q('spec-preview'), {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#ffffff',
-      width: 1000,
-      height: 700,
-      logging: false,
-      windowWidth: 1200,
-      windowHeight: 900,
+      scale: 2, useCORS: true, allowTaint: false,
+      backgroundColor: '#ffffff', width: 1000, height: 700,
+      logging: false, windowWidth: 1200, windowHeight: 900,
     });
     const name = q('f-name').value || '스펙시트';
     const link = document.createElement('a');
@@ -1120,7 +1620,8 @@ q('btn-download').addEventListener('click', async () => {
     showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
     wrapper.style.transform = savedTransform;
-    btn.textContent = 'PNG 다운로드';
+    if (dimToolActive) dimSvg.classList.add('tool-active');
+    btn.textContent = 'PNG';
     btn.disabled = false;
   }
 });
@@ -1130,47 +1631,32 @@ q('btn-download-pdf').addEventListener('click', async () => {
   const btn = q('btn-download-pdf');
   btn.textContent = '⏳ 생성 중...';
   btn.disabled = true;
-
   const wrapper = q('preview-wrapper');
   const savedTransform = wrapper.style.transform;
   wrapper.style.transform = 'none';
 
+  dimSvg.classList.remove('tool-active');
+
   try {
     await document.fonts.ready;
-    if (typeof window.html2canvas !== 'function') {
-      throw new Error('html2canvas 로드 실패. 페이지를 새로고침해 주세요.');
-    }
-    if (!window.jspdf?.jsPDF) {
-      throw new Error('jsPDF 로드 실패. 페이지를 새로고침해 주세요.');
-    }
+    if (typeof window.html2canvas !== 'function') throw new Error('html2canvas 로드 실패. 새로고침해 주세요.');
+    if (!window.jspdf?.jsPDF) throw new Error('jsPDF 로드 실패. 새로고침해 주세요.');
 
     const canvas = await window.html2canvas(q('spec-preview'), {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#ffffff',
-      width: 1000,
-      height: 700,
-      logging: false,
-      windowWidth: 1200,
-      windowHeight: 900,
+      scale: 2, useCORS: true, allowTaint: false,
+      backgroundColor: '#ffffff', width: 1000, height: 700,
+      logging: false, windowWidth: 1200, windowHeight: 900,
     });
 
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-    // A4 landscape: 297 × 210mm  /  image ratio: 1000:700
     const pageW = 297, pageH = 210;
-    const imgRatio = 1000 / 700;          // ≈ 1.4286
-    const maxW = pageW - 10, maxH = pageH - 10;  // 5mm 여백
+    const imgRatio = 1000 / 700;
+    const maxW = pageW - 10, maxH = pageH - 10;
     let imgW = maxW, imgH = imgW / imgRatio;
     if (imgH > maxH) { imgH = maxH; imgW = imgH * imgRatio; }
-    const imgX = (pageW - imgW) / 2;
-    const imgY = (pageH - imgH) / 2;
-
-    pdf.addImage(imgData, 'JPEG', imgX, imgY, imgW, imgH);
-
+    pdf.addImage(imgData, 'JPEG', (pageW-imgW)/2, (pageH-imgH)/2, imgW, imgH);
     const name = q('f-name').value || '스펙시트';
     pdf.save(`spec_${name}_${Date.now()}.pdf`);
     showToast('✅ PDF 다운로드 완료!');
@@ -1179,7 +1665,8 @@ q('btn-download-pdf').addEventListener('click', async () => {
     showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
     wrapper.style.transform = savedTransform;
-    btn.textContent = 'PDF 다운로드';
+    if (dimToolActive) dimSvg.classList.add('tool-active');
+    btn.textContent = 'PDF';
     btn.disabled = false;
   }
 });
@@ -1187,20 +1674,34 @@ q('btn-download-pdf').addEventListener('click', async () => {
 // ── Reset ─────────────────────────────────────────────
 q('btn-reset').addEventListener('click', () => {
   if (!confirm('입력한 모든 정보를 초기화할까요?')) return;
-  state.productUrl = state.bgRemovedUrl = state.dimUrl = null;
+  state.productUrl = state.bgRemovedUrl = null;
+  state.dimUrl1 = state.bgRemovedDimUrl1 = null;
+  state.dimUrl2 = state.bgRemovedDimUrl2 = null;
+  state.darkMode = false;
   clearBox('box-product');
-  clearBox('box-dim');
+  clearBox('box-dim1');
+  clearBox('box-dim2');
   q('btn-remove-bg').disabled = true;
+  q('btn-dim1-rmbg').disabled = true;
+  q('btn-dim2-rmbg').disabled = true;
   q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
+  // Reset mode toggle
+  q('btn-mode-light').classList.add('active');
+  q('btn-mode-dark').classList.remove('active');
+  // Reset dim tool
+  dimToolActive = false;
+  pendingPoint  = null;
+  dimensions    = [];
+  q('btn-dim-tool').classList.remove('active');
+  dimSvg.classList.remove('tool-active');
+  q('tool-hint-text').textContent = '';
+  if (dimLabelInput) { dimLabelInput.remove(); dimLabelInput = null; }
   customOptions = [];
   renderCustomOptions();
-  ['f-name','f-partno']
-    .forEach(id => { const el = q(id); if (el) el.value = ''; });
+  ['f-name','f-partno'].forEach(id => { const el = q(id); if (el) el.value = ''; });
   q('f-cat').selectedIndex = 0;
   updatePreview();
 });
-
-// (정적 symbol chips 제거됨 — 동적 chips는 renderCustomOptions 내에서 처리)
 
 // ── Init ──────────────────────────────────────────────
 renderCounter();
