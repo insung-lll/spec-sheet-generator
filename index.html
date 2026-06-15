@@ -336,6 +336,32 @@ input[type="file"] { display: none; }
 }
 .btn-add-opt:hover { background: #e0f2fe; border-color: #38bdf8; }
 
+/* ===== PRESET TAGS ===== */
+.preset-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.preset-tag {
+  padding: 4px 12px;
+  background: #f3f4f6;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  line-height: 1.5;
+}
+.preset-tag:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
 /* ===== BUTTONS ===== */
 .btn {
   display: inline-flex; align-items: center; gap: 5px;
@@ -499,7 +525,6 @@ input[type="file"] { display: none; }
   color: #4338ca;
 }
 .sc-rows {
-  flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -508,8 +533,8 @@ input[type="file"] { display: none; }
   display: flex;
   align-items: stretch;
   border-bottom: 1px solid #ebebeb;
-  flex: 1;
-  min-height: 0;
+  height: 60px;
+  flex-shrink: 0;
 }
 .sc-key {
   width: 120px;
@@ -521,7 +546,6 @@ input[type="file"] { display: none; }
   display: flex;
   align-items: center;
   border-right: 1px solid #ebebeb;
-  background: #fafafa;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
@@ -640,6 +664,14 @@ input[type="file"] { display: none; }
 
       <!-- 제품 스펙 -->
       <div class="section-label" style="margin-top:16px;">제품 스펙</div>
+      <div class="preset-tags">
+        <button class="preset-tag" data-key="소비전력">소비전력</button>
+        <button class="preset-tag" data-key="lumen">lumen</button>
+        <button class="preset-tag" data-key="색온도">색온도</button>
+        <button class="preset-tag" data-key="사이즈">사이즈</button>
+        <button class="preset-tag" data-key="타공사이즈">타공사이즈</button>
+        <button class="preset-tag" data-key="색상">색상</button>
+      </div>
       <div id="custom-options-list"></div>
       <button class="btn-add-opt" id="btn-add-opt">＋</button>
 
@@ -909,6 +941,17 @@ function renderCustomOptions() {
   });
 }
 
+// ── Preset Tag 클릭 ───────────────────────────────────
+document.querySelectorAll('.preset-tag').forEach(btn => {
+  btn.addEventListener('click', () => {
+    customOptions.push({ key: btn.dataset.key, val: '' });
+    renderCustomOptions();
+    updatePreview();
+    const rows = q('custom-options-list').querySelectorAll('.val-input');
+    rows[rows.length - 1]?.focus();
+  });
+});
+
 q('btn-add-opt').addEventListener('click', () => {
   customOptions.push({ key: '', val: '' });
   renderCustomOptions();
@@ -987,16 +1030,22 @@ function buildSpec(container, d) {
   // Header
   right.insertAdjacentHTML('beforeend', `
     <div class="sc-spec-header">
-      <div class="sc-prod-name">${esc(d.name || '제품명')}</div>
       ${d.partno ? `<div class="sc-prod-partno">${esc(d.partno)}</div>` : ''}
+      <div class="sc-prod-name">${esc(d.name || '제품명')}</div>
     </div>
   `);
 
-  // Spec rows — custom options only
-  const allRows = d.customs.map(o => ({ key: o.key, val: o.val }));
+  // 자동 단위
+  const UNIT_MAP = { '소비전력': 'W', 'lumen': 'lm', '색온도': 'K' };
 
-  // Pad to at least 5 rows
-  while (allRows.length < 5) allRows.push({ key: '', val: '' });
+  // Spec rows — custom options only
+  const allRows = d.customs.map(o => {
+    const unit = UNIT_MAP[o.key.trim()];
+    const val = (unit && o.val.trim() && !o.val.trim().endsWith(unit))
+      ? o.val + unit : o.val;
+    return { key: o.key, val };
+  });
+
 
   const rowsEl = document.createElement('div');
   rowsEl.className = 'sc-rows';
