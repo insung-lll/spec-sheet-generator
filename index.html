@@ -1015,6 +1015,31 @@ function getProcessedProductImage(url, brightnessPercent) {
     img.src = url;
   });
 }
+function getImageSize(url) {
+  return new Promise((resolve) => {
+    if (!url) { resolve({ w: 1, h: 1 }); return; }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve({ w: img.width, h: img.height });
+    img.onerror = () => resolve({ w: 1, h: 1 });
+    img.src = url;
+  });
+}
+function calculateFitSize(imgW, imgH, boxW, boxH) {
+  if (!imgW || !imgH) return { w: boxW, h: boxH };
+  const imgRatio = imgW / imgH;
+  const boxRatio = boxW / boxH;
+  let finalW = boxW;
+  let finalH = boxH;
+  if (imgRatio > boxRatio) {
+    finalW = boxW;
+    finalH = boxW / imgRatio;
+  } else {
+    finalH = boxH;
+    finalW = boxH * imgRatio;
+  }
+  return { w: finalW, h: finalH };
+}
 function showToast(msg) {
   const t = q('toast');
   t.textContent = msg;
@@ -2157,10 +2182,14 @@ q('btn-download-pptx').addEventListener('click', async () => {
     });
 
     // Logo image
+    const logoSize = await getImageSize('zibis_logo.png');
+    const logoFit = calculateFitSize(logoSize.w, logoSize.h, 1.2, 0.36);
     slide.addImage({
       path: 'zibis_logo.png',
-      x: 8.44, y: 0.22, w: 1.2, h: 0.36,
-      sizing: { type: 'contain' }
+      x: 9.64 - logoFit.w,
+      y: 0.22 + (0.36 - logoFit.h) / 2,
+      w: logoFit.w,
+      h: logoFit.h
     });
 
     // 3. Product Image
@@ -2173,12 +2202,20 @@ q('btn-download-pptx').addEventListener('click', async () => {
 
     if (productImgUrl) {
       const areaH = hasDim ? 3.16 : 6.32;
+      const boxW = 4.7;
+      const boxH = areaH - 0.4;
+      const prodSize = await getImageSize(productImgUrl);
+      const fit = calculateFitSize(prodSize.w, prodSize.h, boxW, boxH);
+      const posX = 0.15 + (boxW - fit.w) / 2;
+      const posY = 0.68 + (areaH - boxH) / 2 + (boxH - fit.h) / 2;
+
       slide.addImage({
         data: productImgUrl.startsWith('data:') ? productImgUrl : null,
         path: productImgUrl.startsWith('data:') ? null : productImgUrl,
-        x: 0.15, y: 0.68 + (areaH - (areaH - 0.4)) / 2,
-        w: 4.7, h: areaH - 0.4,
-        sizing: { type: 'contain' }
+        x: posX,
+        y: posY,
+        w: fit.w,
+        h: fit.h
       });
     }
 
@@ -2186,27 +2223,40 @@ q('btn-download-pptx').addEventListener('click', async () => {
     const dim1ImgUrl = state.bgRemovedDimUrl1 || state.dimUrl1;
     if (dim1ImgUrl) {
       const areaW = hasTwoDim ? 2.49 : 5.0;
+      const boxW = areaW - (hasTwoDim ? 0.2 : 0.4);
+      const boxH = 3.16 - 0.2;
+      const dim1Size = await getImageSize(dim1ImgUrl);
+      const fit1 = calculateFitSize(dim1Size.w, dim1Size.h, boxW, boxH);
+      const startX = hasTwoDim ? 0.1 : 0.2;
+      const posX = startX + (boxW - fit1.w) / 2;
+      const posY = 3.84 + 0.1 + (boxH - fit1.h) / 2;
+
       slide.addImage({
         data: dim1ImgUrl.startsWith('data:') ? dim1ImgUrl : null,
         path: dim1ImgUrl.startsWith('data:') ? null : dim1ImgUrl,
-        x: hasTwoDim ? 0.1 : 0.2,
-        y: 3.84 + 0.1,
-        w: areaW - (hasTwoDim ? 0.2 : 0.4),
-        h: 3.16 - 0.2,
-        sizing: { type: 'contain' }
+        x: posX,
+        y: posY,
+        w: fit1.w,
+        h: fit1.h
       });
     }
 
     const dim2ImgUrl = state.bgRemovedDimUrl2 || state.dimUrl2;
     if (dim2ImgUrl) {
+      const boxW = 2.49 - 0.2;
+      const boxH = 3.16 - 0.2;
+      const dim2Size = await getImageSize(dim2ImgUrl);
+      const fit2 = calculateFitSize(dim2Size.w, dim2Size.h, boxW, boxH);
+      const posX = 2.51 + 0.1 + (boxW - fit2.w) / 2;
+      const posY = 3.84 + 0.1 + (boxH - fit2.h) / 2;
+
       slide.addImage({
         data: dim2ImgUrl.startsWith('data:') ? dim2ImgUrl : null,
         path: dim2ImgUrl.startsWith('data:') ? null : dim2ImgUrl,
-        x: 2.51 + 0.1,
-        y: 3.84 + 0.1,
-        w: 2.49 - 0.2,
-        h: 3.16 - 0.2,
-        sizing: { type: 'contain' }
+        x: posX,
+        y: posY,
+        w: fit2.w,
+        h: fit2.h
       });
     }
 
