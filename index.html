@@ -1764,9 +1764,6 @@ function showDimLabelInput(dim) {
   function confirmLabel() {
     if (handled) return; handled = true;
     let label = inp.value.trim();
-    if (label && /^\d+(\.\d+)?$/.test(label)) {
-      label += 'mm';
-    }
     const d = dimensions.find(d => d.id === dim.id);
     if (d) d.label = label;
     if (!label) dimensions = dimensions.filter(d => d.id !== dim.id);
