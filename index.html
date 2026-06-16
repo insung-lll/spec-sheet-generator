@@ -1342,7 +1342,7 @@ function showDimLabelInput(dim) {
   container.style.cssText = `
     position: fixed;
     left: ${mx - 80}px;
-    top: ${my - 16}px;
+    top: ${my - 28}px;
     display: flex;
     gap: 4px;
     z-index: 9998;
@@ -1489,7 +1489,7 @@ function renderDimOverlay() {
       labelG.setAttribute('transform', `translate(${mx}, ${my}) rotate(${angleDeg})`);
 
       const bgRect = document.createElementNS(ns, 'rect');
-      bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', -11);
+      bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', -20);
       bgRect.setAttribute('width', labelW);       bgRect.setAttribute('height', 22);
       bgRect.setAttribute('rx', '5');
       bgRect.setAttribute('fill', 'transparent');
@@ -1497,7 +1497,7 @@ function renderDimOverlay() {
       labelG.appendChild(bgRect);
 
       const text = document.createElementNS(ns, 'text');
-      text.setAttribute('x', 0); text.setAttribute('y', 5);
+      text.setAttribute('x', 0); text.setAttribute('y', -8);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('font-size', '12');
       text.setAttribute('font-weight', '700');
