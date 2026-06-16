@@ -10,21 +10,42 @@
 export default async function handler(req, res) {
   // CORS headers (allow same-origin requests from the app)
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   const apiKey = process.env.REMOVE_BG_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'Server configuration error: API key not set' });
   }
+
+  // GET: Fetch real-time remaining credit balance from remove.bg account
+  if (req.method === 'GET') {
+    try {
+      const accountRes = await fetch('https://api.remove.bg/v1.0/account', {
+        method: 'GET',
+        headers: { 'X-Api-Key': apiKey },
+      });
+      if (!accountRes.ok) {
+        throw new Error(`remove.bg API error: ${accountRes.status}`);
+      }
+      const accountData = await accountRes.json();
+      const credits = accountData.data?.attributes?.credits?.total ?? 0;
+      return res.status(200).json({ credits });
+    } catch (err) {
+      console.error('[removebg credit fetch error]', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+
 
   const { image_file_b64 } = req.body;
   if (!image_file_b64) {

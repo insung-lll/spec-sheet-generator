@@ -929,6 +929,23 @@ function showToast(msg) {
 const USAGE_KEY    = 'rmbg_usage';
 const MONTHLY_LIMIT = 50;
 
+let serverCredits = null;
+
+async function fetchServerCredits() {
+  try {
+    const res = await fetch('/api/removebg');
+    if (res.ok) {
+      const data = await res.json();
+      if (typeof data.credits === 'number') {
+        serverCredits = data.credits;
+        renderCounter();
+      }
+    }
+  } catch (e) {
+    console.error('Failed to fetch real-time credits:', e);
+  }
+}
+
 function getUsage() {
   const raw   = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
   const now   = new Date();
@@ -937,12 +954,24 @@ function getUsage() {
   return raw;
 }
 function saveUsage(data) { localStorage.setItem(USAGE_KEY, JSON.stringify(data)); }
-function remainingUses() { const d = getUsage(); return MONTHLY_LIMIT - (d.used || 0); }
+function remainingUses() {
+  if (serverCredits !== null) {
+    return serverCredits;
+  }
+  const d = getUsage();
+  return MONTHLY_LIMIT - (d.used || 0);
+}
 function incrementUsage() {
+  if (serverCredits !== null) {
+    serverCredits = Math.max(0, serverCredits - 1);
+  }
   const d = getUsage();
   d.used = (d.used || 0) + 1;
   saveUsage(d);
   renderCounter();
+  
+  // Re-fetch to stay synchronized with the actual server credits
+  fetchServerCredits();
 }
 function renderCounter() {
   const rem = remainingUses();
@@ -1705,6 +1734,7 @@ q('btn-reset').addEventListener('click', () => {
 
 // ── Init ──────────────────────────────────────────────
 renderCounter();
+fetchServerCredits();
 updatePreview();
 
 </script>
