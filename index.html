@@ -789,6 +789,17 @@ input[type="file"] { display: none; }
             <button type="button" class="btn btn-secondary btn-sm" id="btn-scale-reset" style="padding:2px 6px; font-size:11px; height:24px; line-height:1;">초기화</button>
           </div>
         </div>
+
+        <!-- 제품 이미지 밝기 조절 -->
+        <div class="brightness-control-strip" id="product-brightness-control" style="display:none; margin-top:8px; align-items:center; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 12px;">
+          <span style="font-size:12px; font-weight:600; color:#475569;">☀️ 제품 이미지 밝기 조절</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-brightness-down" style="padding:2px 8px; font-weight:bold; height:24px; line-height:1;">-10%</button>
+            <span id="lbl-brightness-value" style="font-size:12px; font-weight:700; color:#334155; width:36px; text-align:center;">100%</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-brightness-up" style="padding:2px 8px; font-weight:bold; height:24px; line-height:1;">+10%</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-brightness-reset" style="padding:2px 6px; font-size:11px; height:24px; line-height:1;">초기화</button>
+          </div>
+        </div>
       </div>
 
       <!-- 배경 제거 -->
@@ -918,6 +929,7 @@ const state = {
   bgRemovedDimUrl2: null,
   darkMode:         false,
   productScale:     1.0,
+  productBrightness: 100,
 };
 
 let customOptions = [];
@@ -951,6 +963,56 @@ function blobToDataUrl(blob) {
     r.onload = e => res(e.target.result);
     r.onerror = rej;
     r.readAsDataURL(blob);
+  });
+}
+function getProcessedProductImage(url, brightnessPercent) {
+  return new Promise((resolve, reject) => {
+    if (!url) {
+      resolve('');
+      return;
+    }
+    if (brightnessPercent === 100) {
+      resolve(url);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 2048;
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round(h * maxDim / w);
+          w = maxDim;
+        } else {
+          w = Math.round(w * maxDim / h);
+          h = maxDim;
+        }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      try {
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+        const factor = brightnessPercent / 100;
+        for (let i = 0; i < data.length; i += 4) {
+          data[i]     = Math.min(255, data[i] * factor);
+          data[i + 1] = Math.min(255, data[i + 1] * factor);
+          data[i + 2] = Math.min(255, data[i + 2] * factor);
+        }
+        ctx.putImageData(imgData, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (err) {
+        console.error('CORS or pixel processing failed, fallback to original', err);
+        resolve(url);
+      }
+    };
+    img.onerror = () => resolve(url);
+    img.src = url;
   });
 }
 function showToast(msg) {
@@ -1074,8 +1136,11 @@ setupUpload({
     state.productUrl   = url;
     state.bgRemovedUrl = null;
     state.productScale = 1.0;
+    state.productBrightness = 100;
     q('lbl-scale-value').textContent = '100%';
+    q('lbl-brightness-value').textContent = '100%';
     q('product-scale-control').style.display = 'flex';
+    q('product-brightness-control').style.display = 'flex';
     setBoxImage('box-product', url);
     q('btn-remove-bg').disabled = (remainingUses() === 0);
     q('bg-status').textContent = remainingUses() > 0
@@ -1086,8 +1151,11 @@ setupUpload({
   onRemove: () => {
     state.productUrl = state.bgRemovedUrl = null;
     state.productScale = 1.0;
+    state.productBrightness = 100;
     q('lbl-scale-value').textContent = '100%';
+    q('lbl-brightness-value').textContent = '100%';
     q('product-scale-control').style.display = 'none';
+    q('product-brightness-control').style.display = 'none';
     clearBox('box-product');
     q('btn-remove-bg').disabled = true;
     q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
@@ -1114,6 +1182,28 @@ q('btn-scale-reset').addEventListener('click', () => {
   if (!state.productUrl) return;
   state.productScale = 1.0;
   q('lbl-scale-value').textContent = '100%';
+  updatePreview();
+});
+
+// Brightness Control Event Listeners
+q('btn-brightness-down').addEventListener('click', () => {
+  if (!state.productUrl) return;
+  state.productBrightness = Math.max(10, state.productBrightness - 10);
+  q('lbl-brightness-value').textContent = `${state.productBrightness}%`;
+  updatePreview();
+});
+
+q('btn-brightness-up').addEventListener('click', () => {
+  if (!state.productUrl) return;
+  state.productBrightness = Math.min(300, state.productBrightness + 10);
+  q('lbl-brightness-value').textContent = `${state.productBrightness}%`;
+  updatePreview();
+});
+
+q('btn-brightness-reset').addEventListener('click', () => {
+  if (!state.productUrl) return;
+  state.productBrightness = 100;
+  q('lbl-brightness-value').textContent = '100%';
   updatePreview();
 });
 
@@ -1789,6 +1879,7 @@ function buildSpec(container, d) {
     const scale = state.productScale ?? 1.0;
     img.style.maxHeight = ((photoH - 12) * scale) + 'px';
     img.style.maxWidth = (470 * scale) + 'px';
+    img.style.filter = `brightness(${state.productBrightness}%)`;
     img.crossOrigin = 'anonymous';
     photoArea.appendChild(img);
   }
@@ -1894,7 +1985,20 @@ q('btn-download').addEventListener('click', async () => {
   // Hide delete buttons in SVG before export
   dimSvg.classList.remove('tool-active');
 
+  const productImgUrl = state.bgRemovedUrl || state.productUrl;
+  let originalSrc = '';
+  let imgEl = q('spec-preview').querySelector('.sc-photo-area img');
+
   try {
+    if (imgEl && productImgUrl && state.productBrightness !== 100) {
+      btn.textContent = '⏳ 밝기 반영 중...';
+      originalSrc = imgEl.src;
+      const processedUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
+      imgEl.src = processedUrl;
+      imgEl.style.filter = 'none';
+      btn.textContent = '⏳ 생성 중...';
+    }
+
     await document.fonts.ready;
     if (typeof window.html2canvas !== 'function') throw new Error('html2canvas 로드 실패. 새로고침해 주세요.');
     const canvas = await window.html2canvas(q('spec-preview'), {
@@ -1912,6 +2016,10 @@ q('btn-download').addEventListener('click', async () => {
     console.error('[PNG error]', e);
     showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
+    if (imgEl && originalSrc) {
+      imgEl.src = originalSrc;
+      imgEl.style.filter = `brightness(${state.productBrightness}%)`;
+    }
     wrapper.style.transform = savedTransform;
     wrapper.style.marginBottom = savedMargin;
     if (dimToolActive) dimSvg.classList.add('tool-active');
@@ -1933,7 +2041,20 @@ q('btn-download-pdf').addEventListener('click', async () => {
 
   dimSvg.classList.remove('tool-active');
 
+  const productImgUrl = state.bgRemovedUrl || state.productUrl;
+  let originalSrc = '';
+  let imgEl = q('spec-preview').querySelector('.sc-photo-area img');
+
   try {
+    if (imgEl && productImgUrl && state.productBrightness !== 100) {
+      btn.textContent = '⏳ 밝기 반영 중...';
+      originalSrc = imgEl.src;
+      const processedUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
+      imgEl.src = processedUrl;
+      imgEl.style.filter = 'none';
+      btn.textContent = '⏳ 생성 중...';
+    }
+
     await document.fonts.ready;
     if (typeof window.html2canvas !== 'function') throw new Error('html2canvas 로드 실패. 새로고침해 주세요.');
     if (!window.jspdf?.jsPDF) throw new Error('jsPDF 로드 실패. 새로고침해 주세요.');
@@ -1960,6 +2081,10 @@ q('btn-download-pdf').addEventListener('click', async () => {
     console.error('[PDF error]', e);
     showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
+    if (imgEl && originalSrc) {
+      imgEl.src = originalSrc;
+      imgEl.style.filter = `brightness(${state.productBrightness}%)`;
+    }
     wrapper.style.transform = savedTransform;
     wrapper.style.marginBottom = savedMargin;
     if (dimToolActive) dimSvg.classList.add('tool-active');
@@ -2039,7 +2164,13 @@ q('btn-download-pptx').addEventListener('click', async () => {
     });
 
     // 3. Product Image
-    const productImgUrl = state.bgRemovedUrl || state.productUrl;
+    let productImgUrl = state.bgRemovedUrl || state.productUrl;
+    if (productImgUrl && state.productBrightness !== 100) {
+      btn.textContent = '⏳ 밝기 반영 중...';
+      productImgUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
+      btn.textContent = '⏳ 생성 중...';
+    }
+
     if (productImgUrl) {
       const areaH = hasDim ? 3.16 : 6.32;
       slide.addImage({
@@ -2205,8 +2336,11 @@ q('btn-reset').addEventListener('click', () => {
   state.dimUrl2 = state.bgRemovedDimUrl2 = null;
   state.darkMode = false;
   state.productScale = 1.0;
+  state.productBrightness = 100;
   q('lbl-scale-value').textContent = '100%';
+  q('lbl-brightness-value').textContent = '100%';
   q('product-scale-control').style.display = 'none';
+  q('product-brightness-control').style.display = 'none';
   clearBox('box-product');
   clearBox('box-dim1');
   clearBox('box-dim2');
