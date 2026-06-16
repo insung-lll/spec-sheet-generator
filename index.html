@@ -1871,7 +1871,7 @@ function renderDimOverlay() {
       labelG.setAttribute('transform', `translate(${mx}, ${my}) rotate(${angleDeg})`);
 
       const bgRect = document.createElementNS(ns, 'rect');
-      bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', -20);
+      bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', 2);
       bgRect.setAttribute('width', labelW);       bgRect.setAttribute('height', 22);
       bgRect.setAttribute('rx', '5');
       bgRect.setAttribute('fill', 'transparent');
@@ -1879,7 +1879,7 @@ function renderDimOverlay() {
       labelG.appendChild(bgRect);
 
       const text = document.createElementNS(ns, 'text');
-      text.setAttribute('x', 0); text.setAttribute('y', -8);
+      text.setAttribute('x', 0); text.setAttribute('y', 14);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('font-size', '12');
       text.setAttribute('font-weight', '700');
@@ -2551,7 +2551,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
       if (angleDeg > 90)       angleDeg -= 180;
       else if (angleDeg < -90) angleDeg += 180;
 
-      const shiftPx = -10;
+      const shiftPx = 12;
       const ox = (len > 0) ? (-dy / len * shiftPx) : 0;
       const oy = (len > 0) ? (dx / len * shiftPx) : 0;
 
