@@ -692,6 +692,9 @@ input[type="file"] { display: none; }
   background: #0f172a;
   border-top-color: #334155;
 }
+.spec-card.dark .sc-dim-area img[src*="svg"] {
+  filter: invert(1);
+}
 .spec-card.dark .sc-dim-area.two-images .dim-wrap:first-child {
   border-right-color: #334155;
 }
@@ -1189,6 +1192,53 @@ function fixSvgDimensions(svgText) {
     console.error('Error fixing SVG dimensions:', err);
   }
   return svgText;
+}
+
+function getInvertedSvg(dataUrl) {
+  if (!dataUrl || !dataUrl.startsWith('data:image/svg+xml;base64,')) return dataUrl;
+  try {
+    const base64 = dataUrl.split(',')[1];
+    const svgText = decodeURIComponent(escape(atob(base64)));
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, 'image/svg+xml');
+    const svgEl = doc.documentElement;
+
+    const elements = doc.querySelectorAll('*');
+    elements.forEach(el => {
+      if (el.hasAttribute('stroke')) {
+        const s = el.getAttribute('stroke').trim();
+        if (s.toLowerCase() === 'black' || s === '#000000' || s === '#000' || s.replace(/\s/g, '') === 'rgb(0,0,0)') {
+          el.setAttribute('stroke', '#ffffff');
+        } else if (s.toLowerCase() === 'white' || s === '#ffffff' || s === '#fff' || s.replace(/\s/g, '') === 'rgb(255,255,255)') {
+          el.setAttribute('stroke', '#000000');
+        }
+      }
+      if (el.hasAttribute('fill')) {
+        const f = el.getAttribute('fill').trim();
+        if (f.toLowerCase() === 'black' || f === '#000000' || f === '#000' || f.replace(/\s/g, '') === 'rgb(0,0,0)') {
+          el.setAttribute('fill', '#ffffff');
+        } else if (f.toLowerCase() === 'white' || f === '#ffffff' || f === '#fff' || f.replace(/\s/g, '') === 'rgb(255,255,255)') {
+          el.setAttribute('fill', '#000000');
+        }
+      }
+      if (el.hasAttribute('style')) {
+        let style = el.getAttribute('style');
+        style = style.replace(/stroke\s*:\s*(black|#000000|#000|rgb\(0,\s*0,\s*0\))/gi, 'stroke: #ffffff');
+        style = style.replace(/stroke\s*:\s*(white|#ffffff|#fff|rgb\(255,\s*255,\s*255\))/gi, 'stroke: #000000');
+        style = style.replace(/fill\s*:\s*(black|#000000|#000|rgb\(0,\s*0,\s*0\))/gi, 'fill: #ffffff');
+        style = style.replace(/fill\s*:\s*(white|#ffffff|#fff|rgb\(255,\s*255,\s*255\))/gi, 'fill: #000000');
+        el.setAttribute('style', style);
+      }
+    });
+
+    const serializer = new XMLSerializer();
+    const serialized = serializer.serializeToString(doc);
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(serialized)));
+  } catch (e) {
+    console.error('Error inverting SVG colors:', e);
+    return dataUrl;
+  }
 }
 
 // ── Image Upload Setup ────────────────────────────────
@@ -2174,6 +2224,9 @@ q('btn-download').addEventListener('click', async () => {
   const productImgUrl = state.bgRemovedUrl || state.productUrl;
   let originalSrc = '';
   let imgEl = q('spec-preview').querySelector('.sc-photo-area img');
+  const isDark = state.darkMode;
+  const svgImgs = q('spec-preview').querySelectorAll('.sc-dim-area img[src*="svg"]');
+  const originalSvgSrcs = [];
 
   try {
     if (imgEl && productImgUrl && state.productBrightness !== 100) {
@@ -2183,6 +2236,14 @@ q('btn-download').addEventListener('click', async () => {
       imgEl.src = processedUrl;
       imgEl.style.filter = 'none';
       btn.textContent = '⏳ 생성 중...';
+    }
+
+    if (isDark) {
+      svgImgs.forEach((img, idx) => {
+        originalSvgSrcs[idx] = img.src;
+        img.src = getInvertedSvg(img.src);
+        img.style.filter = 'none';
+      });
     }
 
     await document.fonts.ready;
@@ -2205,6 +2266,14 @@ q('btn-download').addEventListener('click', async () => {
     if (imgEl && originalSrc) {
       imgEl.src = originalSrc;
       imgEl.style.filter = `brightness(${state.productBrightness}%)`;
+    }
+    if (isDark) {
+      svgImgs.forEach((img, idx) => {
+        if (originalSvgSrcs[idx]) {
+          img.src = originalSvgSrcs[idx];
+          img.style.filter = '';
+        }
+      });
     }
     wrapper.style.transform = savedTransform;
     wrapper.style.marginBottom = savedMargin;
@@ -2230,6 +2299,9 @@ q('btn-download-pdf').addEventListener('click', async () => {
   const productImgUrl = state.bgRemovedUrl || state.productUrl;
   let originalSrc = '';
   let imgEl = q('spec-preview').querySelector('.sc-photo-area img');
+  const isDark = state.darkMode;
+  const svgImgs = q('spec-preview').querySelectorAll('.sc-dim-area img[src*="svg"]');
+  const originalSvgSrcs = [];
 
   try {
     if (imgEl && productImgUrl && state.productBrightness !== 100) {
@@ -2239,6 +2311,14 @@ q('btn-download-pdf').addEventListener('click', async () => {
       imgEl.src = processedUrl;
       imgEl.style.filter = 'none';
       btn.textContent = '⏳ 생성 중...';
+    }
+
+    if (isDark) {
+      svgImgs.forEach((img, idx) => {
+        originalSvgSrcs[idx] = img.src;
+        img.src = getInvertedSvg(img.src);
+        img.style.filter = 'none';
+      });
     }
 
     await document.fonts.ready;
@@ -2270,6 +2350,14 @@ q('btn-download-pdf').addEventListener('click', async () => {
     if (imgEl && originalSrc) {
       imgEl.src = originalSrc;
       imgEl.style.filter = `brightness(${state.productBrightness}%)`;
+    }
+    if (isDark) {
+      svgImgs.forEach((img, idx) => {
+        if (originalSvgSrcs[idx]) {
+          img.src = originalSvgSrcs[idx];
+          img.style.filter = '';
+        }
+      });
     }
     wrapper.style.transform = savedTransform;
     wrapper.style.marginBottom = savedMargin;
@@ -2384,8 +2472,11 @@ q('btn-download-pptx').addEventListener('click', async () => {
     }
 
     // 4. Dimension Images
-    const dim1ImgUrl = state.bgRemovedDimUrl1 || state.dimUrl1;
+    let dim1ImgUrl = state.bgRemovedDimUrl1 || state.dimUrl1;
     if (dim1ImgUrl) {
+      if (isDark && (dim1ImgUrl.includes('image/svg+xml') || dim1ImgUrl.includes('.svg'))) {
+        dim1ImgUrl = getInvertedSvg(dim1ImgUrl);
+      }
       const areaW = hasTwoDim ? 2.49 : 5.0;
       const boxW = areaW - (hasTwoDim ? 0.2 : 0.4);
       const boxH = 3.16 - 0.2;
@@ -2408,8 +2499,11 @@ q('btn-download-pptx').addEventListener('click', async () => {
       });
     }
 
-    const dim2ImgUrl = state.bgRemovedDimUrl2 || state.dimUrl2;
+    let dim2ImgUrl = state.bgRemovedDimUrl2 || state.dimUrl2;
     if (dim2ImgUrl) {
+      if (isDark && (dim2ImgUrl.includes('image/svg+xml') || dim2ImgUrl.includes('.svg'))) {
+        dim2ImgUrl = getInvertedSvg(dim2ImgUrl);
+      }
       const boxW = 2.49 - 0.2;
       const boxH = 3.16 - 0.2;
       const dim2Size = await getImageSize(dim2ImgUrl);
