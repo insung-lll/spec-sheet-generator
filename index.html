@@ -1134,16 +1134,60 @@ function renderCounter() {
     `매월 1일 갱신 · 다음 갱신: ${next.getMonth()+1}월 ${next.getDate()}일`;
 }
 
+function fixSvgDimensions(svgText) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, 'image/svg+xml');
+    const parserError = doc.querySelector('parsererror');
+    if (parserError) return svgText;
+
+    const svgEl = doc.documentElement;
+    if (svgEl.tagName.toLowerCase() !== 'svg') return svgText;
+
+    const hasWidth = svgEl.hasAttribute('width');
+    const hasHeight = svgEl.hasAttribute('height');
+    const viewBox = svgEl.getAttribute('viewBox');
+
+    if ((!hasWidth || !hasHeight) && viewBox) {
+      const parts = viewBox.trim().split(/\s+/);
+      if (parts.length === 4) {
+        const vbWidth = parseFloat(parts[2]);
+        const vbHeight = parseFloat(parts[3]);
+        if (!isNaN(vbWidth) && !isNaN(vbHeight)) {
+          if (!hasWidth)  svgEl.setAttribute('width', vbWidth);
+          if (!hasHeight) svgEl.setAttribute('height', vbHeight);
+          const serializer = new XMLSerializer();
+          return serializer.serializeToString(doc);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error fixing SVG dimensions:', err);
+  }
+  return svgText;
+}
+
 // ── Image Upload Setup ────────────────────────────────
 function setupUpload({ boxId, inputId, onLoad, onRemove }) {
   const box = q(boxId);
   const inp = q(inputId);
 
   function loadFile(file) {
-    if (!file?.type.startsWith('image/')) return;
-    const r = new FileReader();
-    r.onload = e => onLoad(e.target.result);
-    r.readAsDataURL(file);
+    if (!file) return;
+    const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+    if (isSvg) {
+      const r = new FileReader();
+      r.onload = e => {
+        const fixed = fixSvgDimensions(e.target.result);
+        const dataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(fixed)));
+        onLoad(dataUrl);
+      };
+      r.readAsText(file);
+    } else if (file.type.startsWith('image/')) {
+      const r = new FileReader();
+      r.onload = e => onLoad(e.target.result);
+      r.readAsDataURL(file);
+    }
   }
 
   box.addEventListener('click', e => {
