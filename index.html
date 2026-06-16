@@ -842,6 +842,16 @@ input[type="file"] { display: none; }
             </div>
             <input type="file" id="fi-dim1" accept="image/*">
             <button class="btn btn-primary btn-sm dim-rmbg-btn" id="btn-dim1-rmbg" disabled>배경 제거</button>
+            
+            <!-- 치수 1 크기 조절 -->
+            <div class="scale-control-strip" id="dim1-scale-control" style="display:none; margin-top:4px; align-items:center; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; width:100%;">
+              <span style="font-size:10px; font-weight:600; color:#475569;">🖼️ 크기</span>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-dim1-scale-down" style="padding:0px 4px; font-weight:bold; height:18px; font-size:9px; line-height:1;">-10%</button>
+                <span id="lbl-dim1-scale-value" style="font-size:10px; font-weight:700; color:#334155; width:26px; text-align:center;">100%</span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-dim1-scale-up" style="padding:0px 4px; font-weight:bold; height:18px; font-size:9px; line-height:1;">+10%</button>
+              </div>
+            </div>
           </div>
 
           <!-- 치수 2 -->
@@ -859,6 +869,16 @@ input[type="file"] { display: none; }
             </div>
             <input type="file" id="fi-dim2" accept="image/*">
             <button class="btn btn-primary btn-sm dim-rmbg-btn" id="btn-dim2-rmbg" disabled>배경 제거</button>
+
+            <!-- 치수 2 크기 조절 -->
+            <div class="scale-control-strip" id="dim2-scale-control" style="display:none; margin-top:4px; align-items:center; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; width:100%;">
+              <span style="font-size:10px; font-weight:600; color:#475569;">🖼️ 크기</span>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-dim2-scale-down" style="padding:0px 4px; font-weight:bold; height:18px; font-size:9px; line-height:1;">-10%</button>
+                <span id="lbl-dim2-scale-value" style="font-size:10px; font-weight:700; color:#334155; width:26px; text-align:center;">100%</span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-dim2-scale-up" style="padding:0px 4px; font-weight:bold; height:18px; font-size:9px; line-height:1;">+10%</button>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -934,6 +954,8 @@ const state = {
   darkMode:         false,
   productScale:     1.0,
   productBrightness: 100,
+  dimScale1:        1.0,
+  dimScale2:        1.0,
 };
 
 let customOptions = [];
@@ -1242,12 +1264,18 @@ setupUpload({
   onLoad: url => {
     state.dimUrl1 = url;
     state.bgRemovedDimUrl1 = null;
+    state.dimScale1 = 1.0;
+    q('lbl-dim1-scale-value').textContent = '100%';
+    q('dim1-scale-control').style.display = 'flex';
     setBoxImage('box-dim1', url);
     q('btn-dim1-rmbg').disabled = (remainingUses() === 0);
     updatePreview();
   },
   onRemove: () => {
     state.dimUrl1 = state.bgRemovedDimUrl1 = null;
+    state.dimScale1 = 1.0;
+    q('lbl-dim1-scale-value').textContent = '100%';
+    q('dim1-scale-control').style.display = 'none';
     clearBox('box-dim1');
     q('btn-dim1-rmbg').disabled = true;
     updatePreview();
@@ -1260,16 +1288,52 @@ setupUpload({
   onLoad: url => {
     state.dimUrl2 = url;
     state.bgRemovedDimUrl2 = null;
+    state.dimScale2 = 1.0;
+    q('lbl-dim2-scale-value').textContent = '100%';
+    q('dim2-scale-control').style.display = 'flex';
     setBoxImage('box-dim2', url);
     q('btn-dim2-rmbg').disabled = (remainingUses() === 0);
     updatePreview();
   },
   onRemove: () => {
     state.dimUrl2 = state.bgRemovedDimUrl2 = null;
+    state.dimScale2 = 1.0;
+    q('lbl-dim2-scale-value').textContent = '100%';
+    q('dim2-scale-control').style.display = 'none';
     clearBox('box-dim2');
     q('btn-dim2-rmbg').disabled = true;
     updatePreview();
   },
+});
+
+// Dimension 1 Scale Control Event Listeners
+q('btn-dim1-scale-down').addEventListener('click', () => {
+  if (!state.dimUrl1 && !state.bgRemovedDimUrl1) return;
+  state.dimScale1 = Math.max(0.1, Math.round((state.dimScale1 - 0.1) * 10) / 10);
+  q('lbl-dim1-scale-value').textContent = `${Math.round(state.dimScale1 * 100)}%`;
+  updatePreview();
+});
+
+q('btn-dim1-scale-up').addEventListener('click', () => {
+  if (!state.dimUrl1 && !state.bgRemovedDimUrl1) return;
+  state.dimScale1 = Math.min(2.0, Math.round((state.dimScale1 + 0.1) * 10) / 10);
+  q('lbl-dim1-scale-value').textContent = `${Math.round(state.dimScale1 * 100)}%`;
+  updatePreview();
+});
+
+// Dimension 2 Scale Control Event Listeners
+q('btn-dim2-scale-down').addEventListener('click', () => {
+  if (!state.dimUrl2 && !state.bgRemovedDimUrl2) return;
+  state.dimScale2 = Math.max(0.1, Math.round((state.dimScale2 - 0.1) * 10) / 10);
+  q('lbl-dim2-scale-value').textContent = `${Math.round(state.dimScale2 * 100)}%`;
+  updatePreview();
+});
+
+q('btn-dim2-scale-up').addEventListener('click', () => {
+  if (!state.dimUrl2 && !state.bgRemovedDimUrl2) return;
+  state.dimScale2 = Math.min(2.0, Math.round((state.dimScale2 + 0.1) * 10) / 10);
+  q('lbl-dim2-scale-value').textContent = `${Math.round(state.dimScale2 * 100)}%`;
+  updatePreview();
 });
 
 // ── Product Background Removal ────────────────────────
@@ -1927,16 +1991,32 @@ function buildSpec(container, d) {
     const dimArea = document.createElement('div');
     dimArea.className = 'sc-dim-area' + (hasTwoDim ? ' two-images' : '');
 
-    const urls = hasTwoDim
-      ? [d.dim1Url, d.dim2Url]
-      : [hasDim1 ? d.dim1Url : d.dim2Url];
+    const dimItems = [];
+    if (hasTwoDim) {
+      dimItems.push({ url: d.dim1Url, scale: state.dimScale1, id: 1 });
+      dimItems.push({ url: d.dim2Url, scale: state.dimScale2, id: 2 });
+    } else if (hasDim1) {
+      dimItems.push({ url: d.dim1Url, scale: state.dimScale1, id: 1 });
+    } else if (hasDim2) {
+      dimItems.push({ url: d.dim2Url, scale: state.dimScale2, id: 2 });
+    }
 
-    urls.forEach(url => {
+    dimItems.forEach(item => {
       const wrap = document.createElement('div');
       wrap.className = 'dim-wrap';
       const img = document.createElement('img');
-      img.src = url;
+      img.src = item.url;
       img.crossOrigin = 'anonymous';
+
+      const s = item.scale ?? 1.0;
+      if (hasTwoDim) {
+        img.style.maxWidth = (228 * s) + 'px';
+        img.style.maxHeight = (296 * s) + 'px';
+      } else {
+        img.style.maxWidth = (460 * s) + 'px';
+        img.style.maxHeight = (300 * s) + 'px';
+      }
+
       wrap.appendChild(img);
       dimArea.appendChild(wrap);
     });
@@ -2219,16 +2299,19 @@ q('btn-download-pptx').addEventListener('click', async () => {
       const boxH = areaH - 0.4;
       const prodSize = await getImageSize(productImgUrl);
       const fit = calculateFitSize(prodSize.w, prodSize.h, boxW, boxH);
-      const posX = 0.15 + (boxW - fit.w) / 2;
-      const posY = 0.68 + (areaH - boxH) / 2 + (boxH - fit.h) / 2;
+      const scale = state.productScale ?? 1.0;
+      const finalW = fit.w * scale;
+      const finalH = fit.h * scale;
+      const posX = 0.15 + (boxW - finalW) / 2;
+      const posY = 0.68 + (areaH - boxH) / 2 + (boxH - finalH) / 2;
 
       slide.addImage({
         data: productImgUrl.startsWith('data:') ? productImgUrl : null,
         path: productImgUrl.startsWith('data:') ? null : productImgUrl,
         x: posX,
         y: posY,
-        w: fit.w,
-        h: fit.h
+        w: finalW,
+        h: finalH
       });
     }
 
@@ -2240,17 +2323,20 @@ q('btn-download-pptx').addEventListener('click', async () => {
       const boxH = 3.16 - 0.2;
       const dim1Size = await getImageSize(dim1ImgUrl);
       const fit1 = calculateFitSize(dim1Size.w, dim1Size.h, boxW, boxH);
+      const scale = state.dimScale1 ?? 1.0;
+      const finalW = fit1.w * scale;
+      const finalH = fit1.h * scale;
       const startX = hasTwoDim ? 0.1 : 0.2;
-      const posX = startX + (boxW - fit1.w) / 2;
-      const posY = 3.84 + 0.1 + (boxH - fit1.h) / 2;
+      const posX = startX + (boxW - finalW) / 2;
+      const posY = 3.84 + 0.1 + (boxH - finalH) / 2;
 
       slide.addImage({
         data: dim1ImgUrl.startsWith('data:') ? dim1ImgUrl : null,
         path: dim1ImgUrl.startsWith('data:') ? null : dim1ImgUrl,
         x: posX,
         y: posY,
-        w: fit1.w,
-        h: fit1.h
+        w: finalW,
+        h: finalH
       });
     }
 
@@ -2260,16 +2346,19 @@ q('btn-download-pptx').addEventListener('click', async () => {
       const boxH = 3.16 - 0.2;
       const dim2Size = await getImageSize(dim2ImgUrl);
       const fit2 = calculateFitSize(dim2Size.w, dim2Size.h, boxW, boxH);
-      const posX = 2.51 + 0.1 + (boxW - fit2.w) / 2;
-      const posY = 3.84 + 0.1 + (boxH - fit2.h) / 2;
+      const scale = state.dimScale2 ?? 1.0;
+      const finalW = fit2.w * scale;
+      const finalH = fit2.h * scale;
+      const posX = 2.51 + 0.1 + (boxW - finalW) / 2;
+      const posY = 3.84 + 0.1 + (boxH - finalH) / 2;
 
       slide.addImage({
         data: dim2ImgUrl.startsWith('data:') ? dim2ImgUrl : null,
         path: dim2ImgUrl.startsWith('data:') ? null : dim2ImgUrl,
         x: posX,
         y: posY,
-        w: fit2.w,
-        h: fit2.h
+        w: finalW,
+        h: finalH
       });
     }
 
@@ -2400,10 +2489,16 @@ q('btn-reset').addEventListener('click', () => {
   state.darkMode = false;
   state.productScale = 1.0;
   state.productBrightness = 100;
+  state.dimScale1 = 1.0;
+  state.dimScale2 = 1.0;
   q('lbl-scale-value').textContent = '100%';
   q('lbl-brightness-value').textContent = '100%';
+  q('lbl-dim1-scale-value').textContent = '100%';
+  q('lbl-dim2-scale-value').textContent = '100%';
   q('product-scale-control').style.display = 'none';
   q('product-brightness-control').style.display = 'none';
+  q('dim1-scale-control').style.display = 'none';
+  q('dim2-scale-control').style.display = 'none';
   clearBox('box-product');
   clearBox('box-dim1');
   clearBox('box-dim2');
