@@ -1340,7 +1340,7 @@ function showDimLabelInput(dim) {
     gap: 4px;
     z-index: 9998;
     background: rgba(255,255,255,0.97);
-    border: 2px solid #ef4444;
+    border: none;
     border-radius: 6px;
     padding: 3px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -1486,8 +1486,6 @@ function renderDimOverlay() {
       bgRect.setAttribute('width', labelW);       bgRect.setAttribute('height', 22);
       bgRect.setAttribute('rx', '5');
       bgRect.setAttribute('fill', bgFill);
-      bgRect.setAttribute('stroke', lineColor);
-      bgRect.setAttribute('stroke-width', '1.5');
       bgRect.style.cursor = 'pointer';
       labelG.appendChild(bgRect);
 
@@ -1544,14 +1542,16 @@ function renderDimOverlay() {
       g.appendChild(labelG);
     }
 
-    // Endpoint dots
-    [[dim.x1, dim.y1], [dim.x2, dim.y2]].forEach(([px, py]) => {
-      const dot = document.createElementNS(ns, 'circle');
-      dot.setAttribute('cx', px); dot.setAttribute('cy', py);
-      dot.setAttribute('r', '4');
-      dot.setAttribute('fill', lineColor);
-      g.appendChild(dot);
-    });
+    // Endpoint dots (only when tool is active)
+    if (dimToolActive) {
+      [[dim.x1, dim.y1], [dim.x2, dim.y2]].forEach(([px, py]) => {
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('cx', px); dot.setAttribute('cy', py);
+        dot.setAttribute('r', '4');
+        dot.setAttribute('fill', lineColor);
+        g.appendChild(dot);
+      });
+    }
 
     dimSvg.appendChild(g);
   });
