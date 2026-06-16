@@ -48,7 +48,7 @@ body {
   background: #e2e5e9;
   padding: 20px 24px;
   overflow: hidden;
-  gap: 8px;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -599,7 +599,7 @@ input[type="file"] { display: none; }
 .sc-prod-partno {
   font-size: 16px;
   color: #3C3C3C;
-  font-weight: 500;
+  font-weight: 300;
   margin-top: 3px;
   opacity: 0.6;
 }
@@ -639,11 +639,10 @@ input[type="file"] { display: none; }
   flex-shrink: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #555;
-  padding: 6px 8px 6px 20px;
+  color: #373737;
+  padding: 6px 0px 6px 24px;
   display: flex;
   align-items: center;
-  border-right: 1px solid #ebebeb;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
@@ -652,9 +651,9 @@ input[type="file"] { display: none; }
 .sc-val {
   flex: 1;
   font-size: 18px;
-  font-weight: 400;
+  font-weight: 300;
   color: #3C3C3C;
-  padding: 0 36px;
+  padding: 0 0 0 80px;
   display: flex;
   align-items: center;
   line-height: 1.4;
@@ -682,7 +681,7 @@ input[type="file"] { display: none; }
 .spec-card.dark .sc-prod-name { color: #f1f5f9; }
 .spec-card.dark .sc-prod-partno { color: #94a3b8; }
 .spec-card.dark .sc-row { border-bottom-color: #334155; }
-.spec-card.dark .sc-key { color: #cbd5e1; border-right-color: #334155; }
+.spec-card.dark .sc-key { color: #cbd5e1; }
 .spec-card.dark .sc-val { color: #e2e8f0; }
 
 /* =======================================================
@@ -1201,35 +1200,69 @@ q('btn-dim-tool').addEventListener('click', () => {
   renderDimOverlay();
 });
 
-// SVG click → draw dimension line
-dimSvg.addEventListener('click', e => {
-  if (!dimToolActive) return;
-  // Convert screen coords to spec-card coords (1000×700 space)
-  const rect = q('spec-preview').getBoundingClientRect();
-  const x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
-  const y = Math.round((e.clientY - rect.top)  * 700  / rect.height);
+// Track Shift key status and mouse coordinates globally
+let isShiftPressed = false;
+let currentMouseCoords = null;
 
-  if (!pendingPoint) {
-    pendingPoint = { x, y };
-    q('tool-hint-text').textContent = '두 번째 점을 클릭하세요 (ESC 취소)';
-    renderDimOverlay();
-  } else {
-    // Create dimension
-    const dim = { id: ++dimIdCounter, x1: pendingPoint.x, y1: pendingPoint.y, x2: x, y2: y, label: '' };
-    dimensions.push(dim);
-    pendingPoint = null;
-    q('tool-hint-text').textContent = '치수 이미지 위 첫 번째 점 클릭';
-    renderDimOverlay();
-    showDimLabelInput(dim);
-  }
-});
-
-// Cancel pending point with Escape
 document.addEventListener('keydown', e => {
+  if (e.key === 'Shift') {
+    isShiftPressed = true;
+    if (dimToolActive && pendingPoint) renderDimOverlay();
+  }
   if (e.key === 'Escape' && dimToolActive && pendingPoint) {
     pendingPoint = null;
     q('tool-hint-text').textContent = '치수 이미지 위 첫 번째 점 클릭';
     renderDimOverlay();
+  }
+});
+
+document.addEventListener('keyup', e => {
+  if (e.key === 'Shift') {
+    isShiftPressed = false;
+    if (dimToolActive && pendingPoint) renderDimOverlay();
+  }
+});
+
+// SVG mousemove → track cursor for live preview
+dimSvg.addEventListener('mousemove', e => {
+  if (!dimToolActive || !pendingPoint) return;
+  const rect = q('spec-preview').getBoundingClientRect();
+  const x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
+  const y = Math.round((e.clientY - rect.top)  * 700  / rect.height);
+  currentMouseCoords = { x, y };
+  renderDimOverlay();
+});
+
+// SVG click → draw dimension line
+dimSvg.addEventListener('click', e => {
+  if (!dimToolActive) return;
+  const rect = q('spec-preview').getBoundingClientRect();
+  let x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
+  let y = Math.round((e.clientY - rect.top)  * 700  / rect.height);
+
+  if (!pendingPoint) {
+    pendingPoint = { x, y };
+    q('tool-hint-text').textContent = '두 번째 점을 클릭하세요 (Shift: 스냅, ESC: 취소)';
+    renderDimOverlay();
+  } else {
+    // Snap to horizontal/vertical if Shift key is held
+    if (e.shiftKey || isShiftPressed) {
+      const dx = Math.abs(x - pendingPoint.x);
+      const dy = Math.abs(y - pendingPoint.y);
+      if (dx > dy) {
+        y = pendingPoint.y;
+      } else {
+        x = pendingPoint.x;
+      }
+    }
+    // Create dimension
+    const dim = { id: ++dimIdCounter, x1: pendingPoint.x, y1: pendingPoint.y, x2: x, y2: y, label: '' };
+    dimensions.push(dim);
+    pendingPoint = null;
+    currentMouseCoords = null;
+    q('tool-hint-text').textContent = '치수 이미지 위 첫 번째 점 클릭';
+    renderDimOverlay();
+    showDimLabelInput(dim);
   }
 });
 
@@ -1242,56 +1275,100 @@ function showDimLabelInput(dim) {
   const mx = rect.left + ((dim.x1 + dim.x2) / 2) * scale;
   const my = rect.top  + ((dim.y1 + dim.y2) / 2) * scale;
 
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.placeholder = '치수 (예: 450mm)';
-  inp.style.cssText = `
+  const container = document.createElement('div');
+  container.style.cssText = `
     position: fixed;
-    left: ${mx - 55}px;
-    top: ${my - 14}px;
-    width: 110px;
+    left: ${mx - 80}px;
+    top: ${my - 16}px;
+    display: flex;
+    gap: 4px;
     z-index: 9998;
     background: rgba(255,255,255,0.97);
     border: 2px solid #ef4444;
     border-radius: 6px;
-    padding: 3px 8px;
+    padding: 3px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    align-items: center;
+  `;
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = '치수 입력';
+  inp.value = dim.label || '';
+  inp.style.cssText = `
+    width: 90px;
+    border: none;
+    background: transparent;
     font-size: 12px;
     font-weight: 700;
     color: #ef4444;
     text-align: center;
     outline: none;
     font-family: 'Noto Sans KR', sans-serif;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   `;
 
-  document.body.appendChild(inp);
-  dimLabelInput = inp;
+  const btn = document.createElement('button');
+  btn.textContent = '완료';
+  btn.style.cssText = `
+    background: #ef4444;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    white-space: nowrap;
+    transition: background 0.15s;
+  `;
+  btn.addEventListener('mouseover', () => btn.style.background = '#dc2626');
+  btn.addEventListener('mouseout', () => btn.style.background = '#ef4444');
+
+  container.appendChild(inp);
+  container.appendChild(btn);
+  document.body.appendChild(container);
+  dimLabelInput = container;
+  
   setTimeout(() => inp.focus(), 0);
 
   let handled = false;
   function confirmLabel() {
     if (handled) return; handled = true;
-    const label = inp.value.trim();
+    let label = inp.value.trim();
+    if (label && /^\d+(\.\d+)?$/.test(label)) {
+      label += 'mm';
+    }
     const d = dimensions.find(d => d.id === dim.id);
     if (d) d.label = label;
     if (!label) dimensions = dimensions.filter(d => d.id !== dim.id);
-    if (inp.parentNode) inp.remove();
-    if (dimLabelInput === inp) dimLabelInput = null;
+    if (container.parentNode) container.remove();
+    if (dimLabelInput === container) dimLabelInput = null;
     renderDimOverlay();
   }
   function cancelLabel() {
     if (handled) return; handled = true;
     dimensions = dimensions.filter(d => d.id !== dim.id);
-    if (inp.parentNode) inp.remove();
-    if (dimLabelInput === inp) dimLabelInput = null;
+    if (container.parentNode) container.remove();
+    if (dimLabelInput === container) dimLabelInput = null;
     renderDimOverlay();
   }
+  
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    confirmLabel();
+  });
+  
   inp.addEventListener('keydown', e => {
     e.stopPropagation();
     if (e.key === 'Enter')  confirmLabel();
     if (e.key === 'Escape') cancelLabel();
   });
-  inp.addEventListener('blur', confirmLabel);
+  
+  inp.addEventListener('blur', e => {
+    if (e.relatedTarget === btn) return;
+    setTimeout(() => { if (!handled) confirmLabel(); }, 150);
+  });
 }
 
 // ── Render Dimension SVG Overlay ─────────────────────
@@ -1332,35 +1409,55 @@ function renderDimOverlay() {
       });
     }
 
-    // Label background + text at midpoint
+    // Label background + text at midpoint (parallel to line)
     if (dim.label) {
       const mx = (dim.x1 + dim.x2) / 2;
       const my = (dim.y1 + dim.y2) / 2;
       const labelW = Math.max(dim.label.length * 8 + 20, 44);
 
+      // Angle calculation
+      const angleRad = Math.atan2(dy, dx);
+      let angleDeg = angleRad * 180 / Math.PI;
+      // Make text upright (left-to-right)
+      if (angleDeg > 90)       angleDeg -= 180;
+      else if (angleDeg < -90) angleDeg += 180;
+
+      const labelG = document.createElementNS(ns, 'g');
+      labelG.setAttribute('transform', `translate(${mx}, ${my}) rotate(${angleDeg})`);
+
       const bgRect = document.createElementNS(ns, 'rect');
-      bgRect.setAttribute('x', mx - labelW / 2); bgRect.setAttribute('y', my - 12);
+      bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', -11);
       bgRect.setAttribute('width', labelW);       bgRect.setAttribute('height', 22);
       bgRect.setAttribute('rx', '5');
       bgRect.setAttribute('fill', bgFill);
       bgRect.setAttribute('stroke', lineColor);
       bgRect.setAttribute('stroke-width', '1.5');
-      g.appendChild(bgRect);
+      bgRect.style.cursor = 'pointer';
+      labelG.appendChild(bgRect);
 
       const text = document.createElementNS(ns, 'text');
-      text.setAttribute('x', mx); text.setAttribute('y', my + 5);
+      text.setAttribute('x', 0); text.setAttribute('y', 5);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('font-size', '12');
       text.setAttribute('font-weight', '700');
       text.setAttribute('font-family', 'Noto Sans KR, sans-serif');
       text.setAttribute('fill', lineColor);
+      text.style.cursor = 'pointer';
       text.textContent = dim.label;
-      g.appendChild(text);
+      labelG.appendChild(text);
+
+      // Double-click to edit existing label
+      [bgRect, text].forEach(el => {
+        el.addEventListener('dblclick', e => {
+          e.stopPropagation();
+          showDimLabelInput(dim);
+        });
+      });
 
       // Delete × button (only when tool is active)
       if (dimToolActive) {
-        const bx = mx + labelW / 2 + 10;
-        const by = my;
+        const bx = labelW / 2 + 10;
+        const by = 0;
         const delG = document.createElementNS(ns, 'g');
         delG.style.cursor = 'pointer';
 
@@ -1386,8 +1483,9 @@ function renderDimOverlay() {
           dimensions = dimensions.filter(d => d.id !== dimId);
           renderDimOverlay();
         });
-        g.appendChild(delG);
+        labelG.appendChild(delG);
       }
+      g.appendChild(labelG);
     }
 
     // Endpoint dots
@@ -1401,6 +1499,28 @@ function renderDimOverlay() {
 
     dimSvg.appendChild(g);
   });
+
+  // Pending line preview
+  if (pendingPoint && currentMouseCoords) {
+    let mx = currentMouseCoords.x;
+    let my = currentMouseCoords.y;
+    if (isShiftPressed) {
+      const dx = Math.abs(mx - pendingPoint.x);
+      const dy = Math.abs(my - pendingPoint.y);
+      if (dx > dy) {
+        my = pendingPoint.y;
+      } else {
+        mx = pendingPoint.x;
+      }
+    }
+    const previewLine = document.createElementNS(ns, 'line');
+    previewLine.setAttribute('x1', pendingPoint.x); previewLine.setAttribute('y1', pendingPoint.y);
+    previewLine.setAttribute('x2', mx); previewLine.setAttribute('y2', my);
+    previewLine.setAttribute('stroke', lineColor);
+    previewLine.setAttribute('stroke-width', '1.5');
+    previewLine.setAttribute('stroke-dasharray', '4,4');
+    dimSvg.appendChild(previewLine);
+  }
 
   // Pending first point
   if (pendingPoint) {
