@@ -112,16 +112,20 @@ body {
   gap: 8px;
 }
 .tool-btn {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
   background: #c9cdd4;
   border: none;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s;
   color: #374151;
   font-weight: 700;
+  box-sizing: border-box;
 }
 .tool-btn:hover { background: #b8bcc3; }
 .tool-btn.active { background: #dbeafe; color: #1d4ed8; }
@@ -456,10 +460,11 @@ input[type="file"] { display: none; }
 /* ===== BUTTONS ===== */
 .btn {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 9px 16px; border-radius: 8px;
+  height: 38px; padding: 0 16px; border-radius: 8px;
   font-size: 13px; font-weight: 700;
   font-family: inherit; cursor: pointer; border: none;
   transition: all 0.15s; white-space: nowrap;
+  box-sizing: border-box;
 }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 .btn-primary { background: #2563eb; color: white; }
