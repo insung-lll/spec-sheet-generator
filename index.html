@@ -1144,22 +1144,46 @@ function fixSvgDimensions(svgText) {
     const svgEl = doc.documentElement;
     if (svgEl.tagName.toLowerCase() !== 'svg') return svgText;
 
-    const hasWidth = svgEl.hasAttribute('width');
-    const hasHeight = svgEl.hasAttribute('height');
-    const viewBox = svgEl.getAttribute('viewBox');
+    let baseW = null;
+    let baseH = null;
 
-    if ((!hasWidth || !hasHeight) && viewBox) {
+    const viewBox = svgEl.getAttribute('viewBox');
+    if (viewBox) {
       const parts = viewBox.trim().split(/\s+/);
       if (parts.length === 4) {
-        const vbWidth = parseFloat(parts[2]);
-        const vbHeight = parseFloat(parts[3]);
-        if (!isNaN(vbWidth) && !isNaN(vbHeight)) {
-          if (!hasWidth)  svgEl.setAttribute('width', vbWidth);
-          if (!hasHeight) svgEl.setAttribute('height', vbHeight);
-          const serializer = new XMLSerializer();
-          return serializer.serializeToString(doc);
-        }
+        baseW = parseFloat(parts[2]);
+        baseH = parseFloat(parts[3]);
       }
+    }
+
+    if (baseW === null || baseH === null || isNaN(baseW) || isNaN(baseH)) {
+      const attrW = parseFloat(svgEl.getAttribute('width'));
+      const attrH = parseFloat(svgEl.getAttribute('height'));
+      if (!isNaN(attrW) && !isNaN(attrH)) {
+        baseW = attrW;
+        baseH = attrH;
+      }
+    }
+
+    if (baseW && baseH && !isNaN(baseW) && !isNaN(baseH)) {
+      if (!viewBox) {
+        svgEl.setAttribute('viewBox', `0 0 ${baseW} ${baseH}`);
+      }
+
+      // Upscale the width and height attributes to make it high-resolution
+      // Target max size of 2000px, but at least 4x the original size
+      const targetMax = 2000;
+      const currentMax = Math.max(baseW, baseH);
+      const scaleFactor = Math.max(4, targetMax / currentMax);
+
+      const highResW = Math.round(baseW * scaleFactor);
+      const highResH = Math.round(baseH * scaleFactor);
+
+      svgEl.setAttribute('width', highResW);
+      svgEl.setAttribute('height', highResH);
+
+      const serializer = new XMLSerializer();
+      return serializer.serializeToString(doc);
     }
   } catch (err) {
     console.error('Error fixing SVG dimensions:', err);
