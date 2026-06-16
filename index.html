@@ -717,6 +717,10 @@ input[type="file"] { display: none; }
   pointer-events: all;
   cursor: crosshair;
 }
+#dim-svg-overlay.select-active {
+  pointer-events: all;
+  cursor: default;
+}
 </style>
 </head>
 <body>
@@ -1391,6 +1395,7 @@ function setDimToolState(active) {
 function setSelectToolState(active) {
   selectToolActive = active;
   const btnSelect = q('btn-select-tool');
+  dimSvg.classList.toggle('select-active', active);
   if (active) {
     btnSelect.classList.add('active');
     if (dimToolActive) {
@@ -1636,6 +1641,14 @@ function renderDimOverlay() {
     });
 
     // Line
+    const hitLine = document.createElementNS(ns, 'line');
+    hitLine.setAttribute('x1', dim.x1); hitLine.setAttribute('y1', dim.y1);
+    hitLine.setAttribute('x2', dim.x2); hitLine.setAttribute('y2', dim.y2);
+    hitLine.setAttribute('stroke', 'transparent');
+    hitLine.setAttribute('stroke-width', '16');
+    hitLine.setAttribute('stroke-linecap', 'round');
+    g.appendChild(hitLine);
+
     const line = document.createElementNS(ns, 'line');
     line.setAttribute('x1', dim.x1); line.setAttribute('y1', dim.y1);
     line.setAttribute('x2', dim.x2); line.setAttribute('y2', dim.y2);
