@@ -1990,7 +1990,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
 
     // 1. Division lines
     // Left-Right vertical divider line
-    slide.addLine({
+    slide.addShape(pptx.shapes.LINE, {
       x: 5.0, y: 0.68, w: 0, h: 6.32,
       line: { color: isDark ? '334155' : 'E0E0E0', width: 1 }
     });
@@ -2002,7 +2002,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
 
     // Horizontal divider below product image
     if (hasDim) {
-      slide.addLine({
+      slide.addShape(pptx.shapes.LINE, {
         x: 0.0, y: 3.84, w: 5.0, h: 0,
         line: { color: isDark ? '334155' : 'E8E8E8', width: 1 }
       });
@@ -2010,14 +2010,14 @@ q('btn-download-pptx').addEventListener('click', async () => {
 
     // Vertical divider between dimension images
     if (hasTwoDim) {
-      slide.addLine({
+      slide.addShape(pptx.shapes.LINE, {
         x: 2.49, y: 3.84, w: 0, h: 3.16,
         line: { color: isDark ? '334155' : 'E8E8E8', width: 1 }
       });
     }
 
     // Top Header line
-    slide.addLine({
+    slide.addShape(pptx.shapes.LINE, {
       x: 0.32, y: 0.68, w: 9.36, h: 0,
       line: { color: isDark ? '64748B' : '111111', width: 1 }
     });
@@ -2081,7 +2081,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
 
     // 5. SVG Dimensions (Lines and labels)
     dimensions.forEach(dim => {
-      slide.addLine({
+      slide.addShape(pptx.shapes.LINE, {
         x: dim.x1 / 100, y: dim.y1 / 100,
         w: (dim.x2 - dim.x1) / 100, h: (dim.y2 - dim.y1) / 100,
         line: { color: isDark ? 'FFFFFF' : 'EF4444', width: 2 }
@@ -2094,7 +2094,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
         const nx = -dy / len * 7;
         const ny = dx / len * 7;
         [[dim.x1, dim.y1], [dim.x2, dim.y2]].forEach(([px, py]) => {
-          slide.addLine({
+          slide.addShape(pptx.shapes.LINE, {
             x: (px + nx) / 100, y: (py + ny) / 100,
             w: (-2 * nx) / 100, h: (-2 * ny) / 100,
             line: { color: isDark ? 'FFFFFF' : 'EF4444', width: 2 }
@@ -2144,7 +2144,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
     });
     specHeaderY += 0.48;
 
-    slide.addLine({
+    slide.addShape(pptx.shapes.LINE, {
       x: 5.24, y: specHeaderY, w: 4.44, h: 0,
       line: { color: isDark ? '64748B' : '222222', width: 1.5 }
     });
@@ -2179,7 +2179,7 @@ q('btn-download-pptx').addEventListener('click', async () => {
       });
 
       // Row Bottom Line
-      slide.addLine({
+      slide.addShape(pptx.shapes.LINE, {
         x: 5.24, y: rowY + 0.60, w: 4.44, h: 0,
         line: { color: isDark ? '334155' : 'EBEBEB', width: 1 }
       });
