@@ -733,6 +733,7 @@ input[type="file"] { display: none; }
 
     <!-- Dimension tool toolbar -->
     <div class="preview-toolbar" id="preview-toolbar">
+      <button class="tool-btn" id="btn-select-tool" title="치수 선택 및 삭제">🔍 선택</button>
       <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수</button>
       <span class="tool-hint-text" id="tool-hint-text"></span>
     </div>
@@ -907,6 +908,8 @@ let customOptions = [];
 let dimensions    = []; // [{id, x1, y1, x2, y2, label}]
 let dimIdCounter  = 0;
 let dimToolActive = false;
+let selectToolActive = false;
+let selectedDimId = null;
 let pendingPoint  = null; // {x, y} — first point waiting for second
 let dimLabelInput = null; // floating input currently shown
 
@@ -1235,6 +1238,9 @@ function setDimToolState(active) {
   dimSvg.classList.toggle('tool-active', active);
   
   if (active) {
+    if (selectToolActive) {
+      setSelectToolState(false);
+    }
     const hasDim = !!(state.dimUrl1 || state.dimUrl2);
     q('tool-hint-text').textContent = hasDim
       ? '치수 이미지 위 첫 번째 점 클릭'
@@ -1249,8 +1255,30 @@ function setDimToolState(active) {
   renderDimOverlay();
 }
 
+function setSelectToolState(active) {
+  selectToolActive = active;
+  const btnSelect = q('btn-select-tool');
+  if (active) {
+    btnSelect.classList.add('active');
+    if (dimToolActive) {
+      setDimToolState(false);
+    }
+    q('tool-hint-text').textContent = '선택 모드: 삭제할 치수를 클릭 후 Del 키를 누르세요.';
+    selectedDimId = null;
+  } else {
+    btnSelect.classList.remove('active');
+    q('tool-hint-text').textContent = '';
+    selectedDimId = null;
+  }
+  renderDimOverlay();
+}
+
 q('btn-dim-tool').addEventListener('click', () => {
   setDimToolState(!dimToolActive);
+});
+
+q('btn-select-tool').addEventListener('click', () => {
+  setSelectToolState(!selectToolActive);
 });
 
 // Track Shift key status and mouse coordinates globally
@@ -1266,6 +1294,16 @@ document.addEventListener('keydown', e => {
     pendingPoint = null;
     q('tool-hint-text').textContent = '치수 이미지 위 첫 번째 점 클릭';
     renderDimOverlay();
+  }
+  // Delete/Backspace key to remove selected dimension
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectToolActive && selectedDimId !== null) {
+    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+      return; // Do not delete while typing
+    }
+    dimensions = dimensions.filter(d => d.id !== selectedDimId);
+    selectedDimId = null;
+    renderDimOverlay();
+    updatePreview();
   }
 });
 
@@ -1295,6 +1333,13 @@ dimSvg.addEventListener('mousemove', e => {
 
 // SVG click → draw dimension line
 dimSvg.addEventListener('click', e => {
+  if (selectToolActive) {
+    if (e.target === dimSvg) {
+      selectedDimId = null;
+      renderDimOverlay();
+    }
+    return;
+  }
   if (!dimToolActive) return;
   const rect = q('spec-preview').getBoundingClientRect();
   let x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
@@ -1443,14 +1488,26 @@ function renderDimOverlay() {
   const bgFill     = isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.93)';
 
   dimensions.forEach(dim => {
+    const isSelected = selectedDimId === dim.id;
+    const currentLineColor = isSelected ? '#f59e0b' : lineColor;
+    const currentStrokeWidth = isSelected ? '3.5' : '2';
+
     const g = document.createElementNS(ns, 'g');
+    g.style.cursor = selectToolActive ? 'pointer' : 'default';
+    g.addEventListener('click', e => {
+      if (selectToolActive) {
+        e.stopPropagation();
+        selectedDimId = dim.id;
+        renderDimOverlay();
+      }
+    });
 
     // Line
     const line = document.createElementNS(ns, 'line');
     line.setAttribute('x1', dim.x1); line.setAttribute('y1', dim.y1);
     line.setAttribute('x2', dim.x2); line.setAttribute('y2', dim.y2);
-    line.setAttribute('stroke', lineColor);
-    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke', currentLineColor);
+    line.setAttribute('stroke-width', currentStrokeWidth);
     line.setAttribute('stroke-linecap', 'round');
     g.appendChild(line);
 
@@ -1465,8 +1522,8 @@ function renderDimOverlay() {
         const tick = document.createElementNS(ns, 'line');
         tick.setAttribute('x1', px + nx); tick.setAttribute('y1', py + ny);
         tick.setAttribute('x2', px - nx); tick.setAttribute('y2', py - ny);
-        tick.setAttribute('stroke', lineColor);
-        tick.setAttribute('stroke-width', '2');
+        tick.setAttribute('stroke', currentLineColor);
+        tick.setAttribute('stroke-width', currentStrokeWidth);
         tick.setAttribute('stroke-linecap', 'round');
         g.appendChild(tick);
       });
@@ -1502,7 +1559,7 @@ function renderDimOverlay() {
       text.setAttribute('font-size', '12');
       text.setAttribute('font-weight', '700');
       text.setAttribute('font-family', 'Noto Sans KR, sans-serif');
-      text.setAttribute('fill', lineColor);
+      text.setAttribute('fill', currentLineColor);
       text.style.cursor = 'pointer';
       text.textContent = dim.label;
       labelG.appendChild(text);
