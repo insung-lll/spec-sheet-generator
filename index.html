@@ -749,7 +749,7 @@ input[type="file"] { display: none; }
     <div class="preview-toolbar" id="preview-toolbar">
       <div class="tool-btn-row">
         <button class="tool-btn" id="btn-select-tool" title="치수 선택 및 삭제">↖ 치수 선택</button>
-        <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수</button>
+        <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수 재기</button>
       </div>
       <span class="tool-hint-text" id="tool-hint-text"></span>
     </div>
@@ -1249,7 +1249,7 @@ function setDimToolState(active) {
   dimToolActive = active;
   const btnTool = q('btn-dim-tool');
   btnTool.className = active ? "btn btn-primary" : "tool-btn";
-  btnTool.textContent = active ? "치수 입력 완료" : "📐 치수";
+  btnTool.textContent = active ? "치수 입력 완료" : "📐 치수 재기";
   btnTool.style.boxShadow = active ? "0 4px 12px rgba(59,130,246,0.25)" : "none";
   dimSvg.classList.toggle('tool-active', active);
   
