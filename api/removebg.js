@@ -33,7 +33,9 @@ export default async function handler(req, res) {
         throw new Error(`remove.bg API error: ${accountRes.status}`);
       }
       const accountData = await accountRes.json();
-      const credits = accountData.data?.attributes?.credits?.total ?? 0;
+      const creditsObj = accountData.data?.attributes?.credits;
+      const apiObj = accountData.data?.attributes?.api;
+      const credits = (creditsObj?.total ?? 0) + (apiObj?.free_calls ?? 0);
       return res.status(200).json({ credits });
     } catch (err) {
       console.error('[removebg credit fetch error]', err);
