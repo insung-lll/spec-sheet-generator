@@ -757,6 +757,17 @@ input[type="file"] { display: none; }
           </div>
         </div>
         <input type="file" id="fi-product" accept="image/*">
+        
+        <!-- 제품 이미지 크기 조절 -->
+        <div class="scale-control-strip" id="product-scale-control" style="display:none; margin-top:8px; align-items:center; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 12px;">
+          <span style="font-size:12px; font-weight:600; color:#475569;">🖼️ 제품 이미지 크기 조절</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-scale-down" style="padding:2px 8px; font-weight:bold; height:24px; line-height:1;">-10%</button>
+            <span id="lbl-scale-value" style="font-size:12px; font-weight:700; color:#334155; width:36px; text-align:center;">100%</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-scale-up" style="padding:2px 8px; font-weight:bold; height:24px; line-height:1;">+10%</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-scale-reset" style="padding:2px 6px; font-size:11px; height:24px; line-height:1;">초기화</button>
+          </div>
+        </div>
       </div>
 
       <!-- 배경 제거 -->
@@ -884,6 +895,7 @@ const state = {
   dimUrl2:          null,
   bgRemovedDimUrl2: null,
   darkMode:         false,
+  productScale:     1.0,
 };
 
 let customOptions = [];
@@ -1037,6 +1049,9 @@ setupUpload({
   onLoad: url => {
     state.productUrl   = url;
     state.bgRemovedUrl = null;
+    state.productScale = 1.0;
+    q('lbl-scale-value').textContent = '100%';
+    q('product-scale-control').style.display = 'flex';
     setBoxImage('box-product', url);
     q('btn-remove-bg').disabled = (remainingUses() === 0);
     q('bg-status').textContent = remainingUses() > 0
@@ -1046,11 +1061,36 @@ setupUpload({
   },
   onRemove: () => {
     state.productUrl = state.bgRemovedUrl = null;
+    state.productScale = 1.0;
+    q('lbl-scale-value').textContent = '100%';
+    q('product-scale-control').style.display = 'none';
     clearBox('box-product');
     q('btn-remove-bg').disabled = true;
     q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
     updatePreview();
   },
+});
+
+// Scale Control Event Listeners
+q('btn-scale-down').addEventListener('click', () => {
+  if (!state.productUrl) return;
+  state.productScale = Math.max(0.1, Math.round((state.productScale - 0.1) * 10) / 10);
+  q('lbl-scale-value').textContent = `${Math.round(state.productScale * 100)}%`;
+  updatePreview();
+});
+
+q('btn-scale-up').addEventListener('click', () => {
+  if (!state.productUrl) return;
+  state.productScale = Math.min(2.0, Math.round((state.productScale + 0.1) * 10) / 10);
+  q('lbl-scale-value').textContent = `${Math.round(state.productScale * 100)}%`;
+  updatePreview();
+});
+
+q('btn-scale-reset').addEventListener('click', () => {
+  if (!state.productUrl) return;
+  state.productScale = 1.0;
+  q('lbl-scale-value').textContent = '100%';
+  updatePreview();
 });
 
 // ── Dimension Image 1 ─────────────────────────────────
@@ -1647,7 +1687,9 @@ function buildSpec(container, d) {
   if (d.imageUrl) {
     const img = document.createElement('img');
     img.src = d.imageUrl;
-    img.style.maxHeight = (photoH - 12) + 'px';
+    const scale = state.productScale ?? 1.0;
+    img.style.maxHeight = ((photoH - 12) * scale) + 'px';
+    img.style.maxWidth = (470 * scale) + 'px';
     img.crossOrigin = 'anonymous';
     photoArea.appendChild(img);
   }
@@ -1827,6 +1869,9 @@ q('btn-reset').addEventListener('click', () => {
   state.dimUrl1 = state.bgRemovedDimUrl1 = null;
   state.dimUrl2 = state.bgRemovedDimUrl2 = null;
   state.darkMode = false;
+  state.productScale = 1.0;
+  q('lbl-scale-value').textContent = '100%';
+  q('product-scale-control').style.display = 'none';
   clearBox('box-product');
   clearBox('box-dim1');
   clearBox('box-dim2');
