@@ -101,9 +101,15 @@ body {
 /* Dim tool toolbar (below preview) */
 .preview-toolbar {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   flex-shrink: 0;
+}
+.tool-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .tool-btn {
   padding: 5px 12px;
@@ -733,8 +739,10 @@ input[type="file"] { display: none; }
 
     <!-- Dimension tool toolbar -->
     <div class="preview-toolbar" id="preview-toolbar">
-      <button class="tool-btn" id="btn-select-tool" title="치수 선택 및 삭제">↖ 치수 선택</button>
-      <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수</button>
+      <div class="tool-btn-row">
+        <button class="tool-btn" id="btn-select-tool" title="치수 선택 및 삭제">↖ 치수 선택</button>
+        <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수</button>
+      </div>
       <span class="tool-hint-text" id="tool-hint-text"></span>
     </div>
 
