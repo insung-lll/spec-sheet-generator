@@ -497,6 +497,7 @@ input[type="file"] { display: none; }
   flex-shrink: 0;
   display: flex;
   align-items: flex-end;
+  justify-content: space-between;
   padding: 0 32px 10px 32px;
   background-image: linear-gradient(#111, #111);
   background-size: 930px 1px;
@@ -1680,6 +1681,7 @@ function buildSpec(container, d) {
   container.insertAdjacentHTML('beforeend', `
     <div class="sc-header">
       <div class="sc-category">${esc(d.category)}</div>
+      <img class="sc-logo" src="zibis_logo.png" alt="Zibis Logo" style="height: 18px; object-fit: contain; margin-bottom: 2px;" crossorigin="anonymous">
     </div>
   `);
 
@@ -1787,6 +1789,7 @@ function scalePreview() {
   wrapper.style.transform = `scale(${scale})`;
   wrapper.style.width  = '1000px';
   wrapper.style.height = '700px';
+  wrapper.style.marginBottom = `-${700 * (1 - scale)}px`;
 }
 window.addEventListener('resize', scalePreview);
 
@@ -1797,7 +1800,9 @@ q('btn-download').addEventListener('click', async () => {
   btn.disabled = true;
   const wrapper = q('preview-wrapper');
   const savedTransform = wrapper.style.transform;
+  const savedMargin = wrapper.style.marginBottom;
   wrapper.style.transform = 'none';
+  wrapper.style.marginBottom = '0px';
 
   // Hide delete buttons in SVG before export
   dimSvg.classList.remove('tool-active');
@@ -1821,6 +1826,7 @@ q('btn-download').addEventListener('click', async () => {
     showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
     wrapper.style.transform = savedTransform;
+    wrapper.style.marginBottom = savedMargin;
     if (dimToolActive) dimSvg.classList.add('tool-active');
     btn.textContent = 'PNG';
     btn.disabled = false;
@@ -1834,7 +1840,9 @@ q('btn-download-pdf').addEventListener('click', async () => {
   btn.disabled = true;
   const wrapper = q('preview-wrapper');
   const savedTransform = wrapper.style.transform;
+  const savedMargin = wrapper.style.marginBottom;
   wrapper.style.transform = 'none';
+  wrapper.style.marginBottom = '0px';
 
   dimSvg.classList.remove('tool-active');
 
@@ -1866,6 +1874,7 @@ q('btn-download-pdf').addEventListener('click', async () => {
     showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
     wrapper.style.transform = savedTransform;
+    wrapper.style.marginBottom = savedMargin;
     if (dimToolActive) dimSvg.classList.add('tool-active');
     btn.textContent = 'PDF';
     btn.disabled = false;
