@@ -733,6 +733,9 @@ input[type="file"] { display: none; }
       <button class="tool-btn" id="btn-dim-tool" title="치수 선 그리기">📐 치수</button>
       <span class="tool-hint-text" id="tool-hint-text"></span>
     </div>
+    
+    <!-- 치수 입력 완료 버튼 -->
+    <button class="btn btn-primary" id="btn-dim-done" style="display:none; margin-top:8px; padding:6px 24px; font-size:13px; font-weight:700; border-radius:8px; box-shadow:0 4px 12px rgba(59,130,246,0.25);">치수 입력 완료</button>
 
   </div>
 
@@ -1225,6 +1228,7 @@ q('btn-mode-dark').addEventListener('click', () => {
 q('btn-dim-tool').addEventListener('click', () => {
   dimToolActive = !dimToolActive;
   q('btn-dim-tool').classList.toggle('active', dimToolActive);
+  q('btn-dim-done').style.display = dimToolActive ? 'block' : 'none';
   dimSvg.classList.toggle('tool-active', dimToolActive);
   if (dimToolActive) {
     const hasDim = !!(state.dimUrl1 || state.dimUrl2);
@@ -1237,6 +1241,18 @@ q('btn-dim-tool').addEventListener('click', () => {
     pendingPoint = null;
     if (dimLabelInput) { dimLabelInput.remove(); dimLabelInput = null; }
   }
+  renderDimOverlay();
+});
+
+q('btn-dim-done').addEventListener('click', () => {
+  dimToolActive = false;
+  q('btn-dim-tool').classList.remove('active');
+  q('btn-dim-done').style.display = 'none';
+  dimSvg.classList.remove('tool-active');
+  q('tool-hint-text').textContent = '';
+  pendingPoint = null;
+  currentMouseCoords = null;
+  if (dimLabelInput) { dimLabelInput.remove(); dimLabelInput = null; }
   renderDimOverlay();
 });
 
@@ -1887,6 +1903,7 @@ q('btn-reset').addEventListener('click', () => {
   pendingPoint  = null;
   dimensions    = [];
   q('btn-dim-tool').classList.remove('active');
+  q('btn-dim-done').style.display = 'none';
   dimSvg.classList.remove('tool-active');
   q('tool-hint-text').textContent = '';
   if (dimLabelInput) { dimLabelInput.remove(); dimLabelInput = null; }
