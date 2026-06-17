@@ -3618,6 +3618,37 @@ async function renderHomeSheets() {
 }
 
 async function deleteSpecSheet(id) {
+  try {
+    // 1. Fetch images to delete from Storage
+    const { data: item } = await supabase
+      .from('spec_sheets')
+      .select('product_url, bg_removed_url, dim_url1, bg_removed_dim_url1, dim_url2, bg_removed_dim_url2')
+      .eq('id', id)
+      .single();
+
+    if (item) {
+      const urls = [
+        item.product_url,
+        item.bg_removed_url,
+        item.dim_url1,
+        item.bg_removed_dim_url1,
+        item.dim_url2,
+        item.bg_removed_dim_url2
+      ].filter(Boolean);
+      
+      const paths = urls
+        .filter(url => url.includes('/blueprints/'))
+        .map(url => url.split('/blueprints/')[1]);
+        
+      if (paths.length > 0) {
+        await supabase.storage.from('blueprints').remove(paths);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to remove images from Storage:', err);
+  }
+
+  // 2. Delete row from DB
   const { error } = await supabase
     .from('spec_sheets')
     .delete()
@@ -4240,6 +4271,28 @@ async function toggleRequestStatus(id) {
 }
 
 async function deleteRequest(id) {
+  try {
+    // 1. Fetch images to delete from Storage
+    const { data: item } = await supabase
+      .from('raw_requests')
+      .select('image_urls')
+      .eq('id', id)
+      .single();
+
+    if (item && item.image_urls && item.image_urls.length > 0) {
+      const paths = item.image_urls
+        .filter(url => url.includes('/blueprints/'))
+        .map(url => url.split('/blueprints/')[1]);
+        
+      if (paths.length > 0) {
+        await supabase.storage.from('blueprints').remove(paths);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to remove request images from Storage:', err);
+  }
+
+  // 2. Delete row from DB
   const { error } = await supabase
     .from('raw_requests')
     .delete()
