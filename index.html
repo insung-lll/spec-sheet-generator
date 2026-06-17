@@ -1329,6 +1329,43 @@ input[type="file"] { display: none; }
 .req-btn-del:hover {
   background: #fee2e2;
 }
+
+/* --- Previews for multiple image requests --- */
+.req-preview-thumb-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.req-preview-thumb-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.req-preview-thumb-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.req-preview-thumb-remove:hover {
+  background: #dc2626;
+}
 </style>
 </head>
 <body>
@@ -1626,14 +1663,13 @@ input[type="file"] { display: none; }
           </div>
           
           <div class="request-form-group">
-            <label>도면 / 제품 파일 (JPG, PNG) *</label>
+            <label>도면 / 제품 파일 (JPG, PNG · 최대 3장) *</label>
             <div class="request-upload-zone" id="req-upload-zone">
               <span class="icon">📁</span>
-              <span id="req-upload-text">파일을 드래그하거나 클릭하여 업로드</span>
-              <span class="file-name" id="req-upload-filename" style="display:none;"></span>
-              <img class="request-upload-preview" id="req-upload-preview" style="display:none;">
+              <span id="req-upload-text">파일을 드래그하거나 클릭하여 업로드 (최대 3장)</span>
             </div>
-            <input type="file" id="fi-request-raw" accept="image/png, image/jpeg, image/jpg" style="display:none;">
+            <input type="file" id="fi-request-raw" accept="image/png, image/jpeg, image/jpg" style="display:none;" multiple>
+            <div id="req-upload-previews-container" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
           </div>
           
           <button type="button" class="btn-submit-request" id="btn-submit-request">요청 등록하기</button>
@@ -3861,14 +3897,21 @@ function loadSpecSheet(id) {
   state.isInitializing = false;
 }
 
-function createNewSpecSheet(prefilledTitle = '', prefilledImageUrl = null) {
+function createNewSpecSheet(prefilledTitle = '', imageUrls = null) {
+  const images = Array.isArray(imageUrls) ? imageUrls : (imageUrls ? [imageUrls] : []);
+  const prefilledImageUrl = images[0] || null;
+  const prefilledDim1Url = images[1] || null;
+  const prefilledDim2Url = images[2] || null;
+
   state.isInitializing = true;
   state.currentId = null;
   
   state.productUrl = prefilledImageUrl;
   state.bgRemovedUrl = null;
-  state.dimUrl1 = state.bgRemovedDimUrl1 = null;
-  state.dimUrl2 = state.bgRemovedDimUrl2 = null;
+  state.dimUrl1 = prefilledDim1Url;
+  state.bgRemovedDimUrl1 = null;
+  state.dimUrl2 = prefilledDim2Url;
+  state.bgRemovedDimUrl2 = null;
   state.productScale = 1.0;
   state.productBrightness = 100;
   state.dimScale1 = 1.0;
@@ -3894,13 +3937,25 @@ function createNewSpecSheet(prefilledTitle = '', prefilledImageUrl = null) {
     q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
   }
   
-  q('dim1-scale-control').style.display = 'none';
-  q('dim2-scale-control').style.display = 'none';
-
-  clearBox('box-dim1');
-  clearBox('box-dim2');
-  q('btn-dim1-rmbg').disabled = true;
-  q('btn-dim2-rmbg').disabled = true;
+  if (prefilledDim1Url) {
+    q('dim1-scale-control').style.display = 'flex';
+    setBoxImage('box-dim1', prefilledDim1Url);
+    q('btn-dim1-rmbg').disabled = (remainingUses() === 0);
+  } else {
+    q('dim1-scale-control').style.display = 'none';
+    clearBox('box-dim1');
+    q('btn-dim1-rmbg').disabled = true;
+  }
+  
+  if (prefilledDim2Url) {
+    q('dim2-scale-control').style.display = 'flex';
+    setBoxImage('box-dim2', prefilledDim2Url);
+    q('btn-dim2-rmbg').disabled = (remainingUses() === 0);
+  } else {
+    q('dim2-scale-control').style.display = 'none';
+    clearBox('box-dim2');
+    q('btn-dim2-rmbg').disabled = true;
+  }
 
   q('btn-mode-light').classList.add('active');
   q('btn-mode-dark').classList.remove('active');
@@ -3924,7 +3979,7 @@ function createNewSpecSheet(prefilledTitle = '', prefilledImageUrl = null) {
 
 // ── Raw Requests State ────────────────────────────────
 let activeMainTab = 'cabinet';
-let requestUploadFileUrl = null;
+let requestUploadFileUrls = []; // stores {name, dataUrl}
 let requestSelectedPriority = '보통';
 let activeRequestFilter = '전체';
 
@@ -3969,9 +4024,23 @@ function renderRawRequests() {
     const statusLabel = item.status === 'Completed' ? '제작완료' : '대기중';
     const statusClass = item.status === 'Completed' ? 'status-completed' : 'status-pending';
     
+    const allUrls = item.imageUrls || [item.imageUrl].filter(Boolean);
+    const mainUrl = allUrls[0] || '';
+    
+    let galleryHtml = '';
+    if (allUrls.length > 1) {
+      galleryHtml = `<div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">` + 
+        allUrls.map((url, i) => `
+          <div style="width:28px; height:28px; border-radius:4px; border:1px solid #e2e8f0; overflow:hidden; background:#f8fafc;" title="도면 ${i + 1}">
+            <img src="${url}" style="width:100%; height:100%; object-fit:contain;">
+          </div>
+        `).join('') +
+      `</div>`;
+    }
+    
     itemEl.innerHTML = `
       <div class="request-item-thumb">
-        <img src="${item.imageUrl}" alt="${esc(item.title)}">
+        <img src="${mainUrl}" alt="${esc(item.title)}">
       </div>
       <div class="request-item-info">
         <div class="request-item-title" title="${esc(item.title)}">${esc(item.title)}</div>
@@ -3980,6 +4049,7 @@ function renderRawRequests() {
           <span class="req-status-badge ${statusClass}">${statusLabel}</span>
           <span>${dateStr}</span>
         </div>
+        ${galleryHtml}
       </div>
       <div class="request-item-actions">
         <button class="req-btn req-btn-create" title="스펙시트 제작하기">🛠️ 제작</button>
@@ -3991,7 +4061,7 @@ function renderRawRequests() {
     
     // Bind actions
     itemEl.querySelector('.req-btn-create').addEventListener('click', () => {
-      createNewSpecSheet(item.title, item.imageUrl);
+      createNewSpecSheet(item.title, allUrls);
     });
     
     itemEl.querySelector('.req-btn-status').addEventListener('click', () => {
@@ -3999,7 +4069,7 @@ function renderRawRequests() {
     });
     
     itemEl.querySelector('.req-btn-dl').addEventListener('click', () => {
-      downloadRawRequestFile(item.title, item.imageUrl);
+      downloadRawRequestFiles(item.title, allUrls);
     });
     
     itemEl.querySelector('.req-btn-del').addEventListener('click', () => {
@@ -4045,37 +4115,79 @@ function deleteRequest(id) {
   showToast('요청이 삭제되었습니다.');
 }
 
-function downloadRawRequestFile(title, dataUrl) {
-  const link = document.createElement('a');
-  link.href = dataUrl;
-  
-  let ext = 'png';
-  if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) {
-    ext = 'jpg';
-  }
-  
-  link.download = `${title.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_raw.${ext}`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+function downloadRawRequestFiles(title, imageUrls) {
+  imageUrls.forEach((dataUrl, idx) => {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    
+    let ext = 'png';
+    if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) {
+      ext = 'jpg';
+    }
+    
+    link.download = `${title.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_raw_${idx + 1}.${ext}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
 }
 
-function handleRequestFile(file) {
-  if (!file) return;
-  if (!file.type.startsWith('image/')) {
-    showToast('⚠️ 이미지 파일(PNG, JPG, JPEG)만 업로드할 수 있습니다.');
+function handleRequestFiles(files) {
+  if (!files || files.length === 0) return;
+  const filesArr = Array.from(files);
+  
+  if (requestUploadFileUrls.length + filesArr.length > 3) {
+    alert('⚠️ 이미지 파일은 최대 3장까지만 등록할 수 있습니다.');
     return;
   }
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    requestUploadFileUrl = e.target.result;
-    q('req-upload-text').style.display = 'none';
-    q('req-upload-filename').textContent = file.name;
-    q('req-upload-filename').style.display = 'block';
-    q('req-upload-preview').src = requestUploadFileUrl;
-    q('req-upload-preview').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
+  
+  let loadedCount = 0;
+  filesArr.forEach(file => {
+    if (!file.type.startsWith('image/')) {
+      showToast('⚠️ 이미지 파일(PNG, JPG, JPEG)만 업로드할 수 있습니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      requestUploadFileUrls.push({
+        name: file.name,
+        dataUrl: e.target.result
+      });
+      loadedCount++;
+      if (loadedCount === filesArr.length) {
+        renderRequestUploadPreviews();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderRequestUploadPreviews() {
+  const container = q('req-upload-previews-container');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  if (requestUploadFileUrls.length === 0) {
+    q('req-upload-text').style.display = 'block';
+    return;
+  }
+  q('req-upload-text').style.display = 'none';
+  
+  requestUploadFileUrls.forEach((fileObj, idx) => {
+    const thumbWrapper = document.createElement('div');
+    thumbWrapper.className = 'req-preview-thumb-wrapper';
+    thumbWrapper.innerHTML = `
+      <img src="${fileObj.dataUrl}" alt="${esc(fileObj.name)}">
+      <button type="button" class="req-preview-thumb-remove" data-idx="${idx}">&times;</button>
+    `;
+    
+    thumbWrapper.querySelector('.req-preview-thumb-remove').addEventListener('click', (e) => {
+      e.stopPropagation();
+      requestUploadFileUrls.splice(idx, 1);
+      renderRequestUploadPreviews();
+    });
+    container.appendChild(thumbWrapper);
+  });
 }
 
 
@@ -4147,7 +4259,7 @@ q('req-upload-zone').addEventListener('click', () => {
   q('fi-request-raw').click();
 });
 q('fi-request-raw').addEventListener('change', (e) => {
-  handleRequestFile(e.target.files[0]);
+  handleRequestFiles(e.target.files);
 });
 
 // Drag & drop for request upload zone
@@ -4162,7 +4274,7 @@ reqZone.addEventListener('dragleave', () => {
 reqZone.addEventListener('drop', (e) => {
   e.preventDefault();
   reqZone.classList.remove('dragover');
-  handleRequestFile(e.dataTransfer.files[0]);
+  handleRequestFiles(e.dataTransfer.files);
 });
 
 // Submit request click
@@ -4172,7 +4284,7 @@ q('btn-submit-request').addEventListener('click', () => {
     alert('요청 제목을 입력해주세요.');
     return;
   }
-  if (!requestUploadFileUrl) {
+  if (requestUploadFileUrls.length === 0) {
     alert('도면/제품 이미지 파일을 업로드해주세요.');
     return;
   }
@@ -4189,7 +4301,7 @@ q('btn-submit-request').addEventListener('click', () => {
     id: 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
     title: title,
     priority: requestSelectedPriority,
-    imageUrl: requestUploadFileUrl,
+    imageUrls: requestUploadFileUrls.map(f => f.dataUrl),
     status: 'Pending',
     createdAt: Date.now()
   };
@@ -4200,15 +4312,12 @@ q('btn-submit-request').addEventListener('click', () => {
   // Reset Form
   q('req-input-title').value = '';
   q('fi-request-raw').value = '';
-  requestUploadFileUrl = null;
+  requestUploadFileUrls = [];
   requestSelectedPriority = '보통';
   q('req-priority-selector').querySelectorAll('.priority-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.priority === '보통');
   });
-  q('req-upload-text').style.display = 'block';
-  q('req-upload-filename').style.display = 'none';
-  q('req-upload-preview').style.display = 'none';
-  q('req-upload-preview').src = '';
+  renderRequestUploadPreviews();
   
   renderRawRequests();
   showToast('✅ 요청이 등록되었습니다.');
