@@ -1173,96 +1173,125 @@ input[type="file"] { display: none; }
   font-weight: 700;
   color: #0f172a;
 }
-.request-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
-}
-.request-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
+.request-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+.request-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  gap: 16px;
   transition: all 0.2s;
 }
-.request-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 12px rgba(0,0,0,0.04);
+.request-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
 }
-.request-card-thumb {
-  height: 150px;
+.request-item-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
   background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
-.request-card-thumb img {
-  max-width: 85%;
-  max-height: 85%;
+.request-item-thumb img {
+  max-width: 90%;
+  max-height: 90%;
   object-fit: contain;
 }
+.request-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.request-item-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.request-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
 .req-priority-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
   color: white;
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 12px;
+  display: inline-block;
 }
 .req-priority-badge.priority-긴급 { background: #ef4444; }
 .req-priority-badge.priority-우선 { background: #f59e0b; }
 .req-priority-badge.priority-보통 { background: #64748b; }
 
 .req-status-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   color: white;
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 12px;
+  display: inline-block;
 }
 .req-status-badge.status-pending { background: #475569; }
 .req-status-badge.status-completed { background: #10b981; }
 
-.request-card-info {
-  padding: 16px;
-  flex: 1;
+.request-status-tabs {
   display: flex;
-  flex-direction: column;
+  gap: 6px;
 }
-.request-card-title {
-  font-size: 14px;
+.status-tab-btn {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 6px;
-  line-height: 1.4;
-  word-break: break-all;
-}
-.request-card-meta {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: auto;
-}
-.request-card-actions {
+  padding: 6px 12px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
-  border-top: 1px solid #f1f5f9;
-  background: #f8fafc;
+  align-items: center;
+  gap: 4px;
+}
+.status-tab-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+.status-tab-btn.active {
+  background: #2563eb;
+  color: white;
+}
+
+.request-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .req-btn {
-  flex: 1;
   border: none;
   background: transparent;
-  padding: 10px 4px;
-  font-size: 11px;
+  padding: 8px 12px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -1270,31 +1299,35 @@ input[type="file"] { display: none; }
   align-items: center;
   justify-content: center;
   gap: 4px;
+  border-radius: 6px;
 }
 .req-btn-create {
-  color: #2563eb;
+  color: white;
+  background: #2563eb;
 }
 .req-btn-create:hover {
-  background: #eff6ff;
+  background: #1d4ed8;
 }
 .req-btn-status {
   color: #475569;
-}
-.req-btn-status:hover {
   background: #f1f5f9;
 }
+.req-btn-status:hover {
+  background: #e2e8f0;
+}
 .req-btn-dl {
-  color: #0ea5e9;
+  color: #0284c7;
+  background: #e0f2fe;
 }
 .req-btn-dl:hover {
-  background: #f0f9ff;
+  background: #bae6fd;
 }
 .req-btn-del {
   color: #ef4444;
-  border-left: 1px solid #f1f5f9;
+  background: #fef2f2;
 }
 .req-btn-del:hover {
-  background: #fef2f2;
+  background: #fee2e2;
 }
 </style>
 </head>
@@ -1610,8 +1643,13 @@ input[type="file"] { display: none; }
         <div class="request-list-wrapper">
           <div class="request-list-header">
             <h3>요청 목록</h3>
+            <div class="request-status-tabs" id="req-status-filter-tabs">
+              <button class="status-tab-btn active" data-filter="전체">전체</button>
+              <button class="status-tab-btn" data-filter="Pending">대기</button>
+              <button class="status-tab-btn" data-filter="Completed">완료</button>
+            </div>
           </div>
-          <div class="request-grid" id="grid-requests">
+          <div class="request-list" id="list-requests">
             <!-- Dynamically rendered raw requests will appear here -->
           </div>
         </div>
@@ -3888,10 +3926,11 @@ function createNewSpecSheet(prefilledTitle = '', prefilledImageUrl = null) {
 let activeMainTab = 'cabinet';
 let requestUploadFileUrl = null;
 let requestSelectedPriority = '보통';
+let activeRequestFilter = '전체';
 
 function renderRawRequests() {
-  const grid = q('grid-requests');
-  if (!grid) return;
+  const container = q('list-requests');
+  if (!container) return;
   
   let list = [];
   try {
@@ -3901,20 +3940,26 @@ function renderRawRequests() {
     console.error(e);
   }
   
-  grid.innerHTML = '';
-  if (list.length === 0) {
-    grid.innerHTML = `
+  // Filter by status tab
+  let filtered = list;
+  if (activeRequestFilter !== '전체') {
+    filtered = filtered.filter(item => item.status === activeRequestFilter);
+  }
+  
+  container.innerHTML = '';
+  if (filtered.length === 0) {
+    container.innerHTML = `
       <div class="empty-state">
         <h3>등록된 요청이 없습니다.</h3>
-        <p>새로운 도면이나 이미지 파일을 업로드하여 스펙시트 제작을 요청해 보세요!</p>
+        <p>${activeRequestFilter !== '전체' ? '필터 조건에 맞는 요청이 없습니다.' : '새로운 도면이나 이미지 파일을 업로드하여 스펙시트 제작을 요청해 보세요!'}</p>
       </div>
     `;
     return;
   }
   
-  list.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'request-card';
+  filtered.forEach(item => {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'request-item';
     
     const dateStr = new Date(item.createdAt).toLocaleDateString('ko-KR', {
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
@@ -3924,17 +3969,19 @@ function renderRawRequests() {
     const statusLabel = item.status === 'Completed' ? '제작완료' : '대기중';
     const statusClass = item.status === 'Completed' ? 'status-completed' : 'status-pending';
     
-    card.innerHTML = `
-      <div class="request-card-thumb">
-        <span class="req-priority-badge priority-${priorityLabel}">${priorityLabel}</span>
-        <span class="req-status-badge ${statusClass}">${statusLabel}</span>
+    itemEl.innerHTML = `
+      <div class="request-item-thumb">
         <img src="${item.imageUrl}" alt="${esc(item.title)}">
       </div>
-      <div class="request-card-info">
-        <div class="request-card-title">${esc(item.title)}</div>
-        <div class="request-card-meta">${dateStr}</div>
+      <div class="request-item-info">
+        <div class="request-item-title" title="${esc(item.title)}">${esc(item.title)}</div>
+        <div class="request-item-meta">
+          <span class="req-priority-badge priority-${priorityLabel}">${priorityLabel}</span>
+          <span class="req-status-badge ${statusClass}">${statusLabel}</span>
+          <span>${dateStr}</span>
+        </div>
       </div>
-      <div class="request-card-actions">
+      <div class="request-item-actions">
         <button class="req-btn req-btn-create" title="스펙시트 제작하기">🛠️ 제작</button>
         <button class="req-btn req-btn-status" title="상태 변경">${item.status === 'Completed' ? '🔄 대기중' : '✅ 완료'}</button>
         <button class="req-btn req-btn-dl" title="원본 다운로드">💾 다운</button>
@@ -3943,25 +3990,25 @@ function renderRawRequests() {
     `;
     
     // Bind actions
-    card.querySelector('.req-btn-create').addEventListener('click', () => {
+    itemEl.querySelector('.req-btn-create').addEventListener('click', () => {
       createNewSpecSheet(item.title, item.imageUrl);
     });
     
-    card.querySelector('.req-btn-status').addEventListener('click', () => {
+    itemEl.querySelector('.req-btn-status').addEventListener('click', () => {
       toggleRequestStatus(item.id);
     });
     
-    card.querySelector('.req-btn-dl').addEventListener('click', () => {
+    itemEl.querySelector('.req-btn-dl').addEventListener('click', () => {
       downloadRawRequestFile(item.title, item.imageUrl);
     });
     
-    card.querySelector('.req-btn-del').addEventListener('click', () => {
+    itemEl.querySelector('.req-btn-del').addEventListener('click', () => {
       if (confirm(`'${item.title}' 요청을 삭제하시겠습니까?`)) {
         deleteRequest(item.id);
       }
     });
     
-    grid.appendChild(card);
+    container.appendChild(itemEl);
   });
 }
 
@@ -4082,6 +4129,16 @@ q('req-priority-selector').querySelectorAll('.priority-btn').forEach(btn => {
     q('req-priority-selector').querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     requestSelectedPriority = btn.dataset.priority;
+  });
+});
+
+// Request status tabs filter switching
+q('req-status-filter-tabs').querySelectorAll('.status-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    q('req-status-filter-tabs').querySelectorAll('.status-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeRequestFilter = btn.dataset.filter;
+    renderRawRequests();
   });
 });
 
