@@ -3866,19 +3866,47 @@ function restoreStateFromSnapshot(s) {
 }
 
 async function downloadSpecSheetDirectly(id, format) {
-  let list = [];
+  let item;
   try {
-    const json = localStorage.getItem('zibis_spec_sheets');
-    if (json) list = JSON.parse(json);
+    const { data, error } = await supabase
+      .from('spec_sheets')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    item = data;
   } catch (e) {
-    console.error(e);
-  }
-
-  const data = list.find(item => item.id === id);
-  if (!data) {
+    console.error('Fetch spec sheet for download error:', e);
     showToast('⚠️ 데이터를 찾을 수 없습니다.');
     return;
   }
+
+  if (!item) {
+    showToast('⚠️ 데이터를 찾을 수 없습니다.');
+    return;
+  }
+
+  // Normalize mapping for compatibility
+  const data = {
+    id: item.id,
+    category: item.category,
+    name: item.name,
+    partno: item.partno,
+    customs: item.customs || [],
+    productUrl: item.product_url,
+    bgRemovedUrl: item.bg_removed_url,
+    productScale: item.product_scale ?? 1.0,
+    productBrightness: item.product_brightness ?? 100,
+    dimUrl1: item.dim_url1,
+    bgRemovedDimUrl1: item.bg_removed_dim_url1,
+    dimScale1: item.dim_scale1 ?? 1.0,
+    dimUrl2: item.dim_url2,
+    bgRemovedDimUrl2: item.bg_removed_dim_url2,
+    dimScale2: item.dim_scale2 ?? 1.0,
+    darkMode: item.dark_mode || false,
+    dimensions: item.dimensions || [],
+    dimIdCounter: item.dim_id_counter || 0
+  };
 
   showToast(`⏳ ${data.name || '스펙시트'} ${format} 파일 생성 중...`);
 
@@ -4531,6 +4559,8 @@ q('btn-submit-request').addEventListener('click', async () => {
     submitBtn.disabled = false;
     submitBtn.textContent = '요청 등록하기';
   }
+});
+
 // ── Init ──────────────────────────────────────────────
 renderCounter();
 fetchServerCredits();
