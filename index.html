@@ -3178,6 +3178,21 @@ async function downloadAsPDF(silent = false) {
 }
 q('btn-download-pdf').addEventListener('click', () => downloadAsPDF(false));
 
+// ── PPTX Image Helper ──────────────────────────────────
+async function fetchAsDataUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('data:')) return url;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    const blob = await res.blob();
+    return await blobToDataUrl(blob);
+  } catch (err) {
+    console.error('Failed to fetch and convert image to dataUrl for PPTX:', url, err);
+    return url;
+  }
+}
+
 // ── Download PPTX ─────────────────────────────────────
 async function downloadAsPPTX(silent = false) {
   const btn = q('btn-download-pptx');
@@ -3256,6 +3271,9 @@ async function downloadAsPPTX(silent = false) {
 
     // 3. Product Image
     let productImgUrl = state.bgRemovedUrl || state.productUrl;
+    if (productImgUrl) {
+      productImgUrl = await fetchAsDataUrl(productImgUrl);
+    }
     if (productImgUrl && state.productBrightness !== 100) {
       if (!silent) btn.textContent = '⏳ 밝기 반영 중...';
       productImgUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
@@ -3287,6 +3305,9 @@ async function downloadAsPPTX(silent = false) {
     // 4. Dimension Images
     let dim1ImgUrl = state.bgRemovedDimUrl1 || state.dimUrl1;
     if (dim1ImgUrl) {
+      dim1ImgUrl = await fetchAsDataUrl(dim1ImgUrl);
+    }
+    if (dim1ImgUrl) {
       if (isDark && (dim1ImgUrl.includes('image/svg+xml') || dim1ImgUrl.includes('.svg'))) {
         dim1ImgUrl = getInvertedSvg(dim1ImgUrl);
       }
@@ -3313,6 +3334,9 @@ async function downloadAsPPTX(silent = false) {
     }
 
     let dim2ImgUrl = state.bgRemovedDimUrl2 || state.dimUrl2;
+    if (dim2ImgUrl) {
+      dim2ImgUrl = await fetchAsDataUrl(dim2ImgUrl);
+    }
     if (dim2ImgUrl) {
       if (isDark && (dim2ImgUrl.includes('image/svg+xml') || dim2ImgUrl.includes('.svg'))) {
         dim2ImgUrl = getInvertedSvg(dim2ImgUrl);
