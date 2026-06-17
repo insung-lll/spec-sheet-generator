@@ -832,6 +832,7 @@ input[type="file"] { display: none; }
 .home-search {
   position: relative;
   width: 280px;
+  margin-left: auto;
 }
 .home-search input {
   width: 100%;
@@ -1209,7 +1210,13 @@ input[type="file"] { display: none; }
     <div class="home-hero">
       <h1>스펙시트 보관함</h1>
       <p>작성된 스펙시트를 불러오거나 카테고리별로 모아서 관리할 수 있습니다.</p>
-      <button class="btn-create-new" id="btn-create-new">➕ 새 스펙시트 만들기</button>
+      <button class="btn-create-new" id="btn-create-new">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        새 스펙시트 만들기
+      </button>
     </div>
 
     <div class="home-controls">
@@ -2944,7 +2951,8 @@ async function downloadAsPPTX(silent = false) {
     btn.textContent = 'PPTX';
     btn.disabled = false;
   }
-});
+}
+q('btn-download-pptx').addEventListener('click', () => downloadAsPPTX(false));
 
 // ── Reset ─────────────────────────────────────────────
 q('btn-reset').addEventListener('click', () => {
