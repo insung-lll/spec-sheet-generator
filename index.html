@@ -480,6 +480,7 @@ input[type="file"] { display: none; }
 .btn-sm { padding: 5px 10px; font-size: 11px; font-weight: 700; }
 .btn-ghost { background: transparent; color: #6b7280; border: 1.5px solid #e5e7eb; flex-shrink: 0; }
 .btn-ghost:hover { background: #f3f4f6; }
+#btn-back-home:hover { background: rgba(255, 255, 255, 0.15) !important; }
 
 /* ===== TOAST ===== */
 .toast {
@@ -2378,7 +2379,7 @@ function buildSpec(container, d) {
   container.insertAdjacentHTML('beforeend', `
     <div class="sc-header">
       <div class="sc-category">${esc(d.category)}</div>
-      <img class="sc-logo" src="zibis_logo.png" alt="Zibis Logo" style="height: 36px; object-fit: contain; margin-bottom: -6px; position: relative; left: -4px;" crossorigin="anonymous">
+      <img class="sc-logo" src="${d.darkMode ? 'zibis_logo_white.png' : 'zibis_logo.png'}" alt="Zibis Logo" style="height: 36px; object-fit: contain; margin-bottom: -6px; position: relative; left: -4px;">
     </div>
   `);
 
@@ -2742,10 +2743,11 @@ async function downloadAsPPTX(silent = false) {
     });
 
     // Logo image
-    const logoSize = await getImageSize('zibis_logo.png');
+    const logoPath = isDark ? 'zibis_logo_white.png' : 'zibis_logo.png';
+    const logoSize = await getImageSize(logoPath);
     const logoFit = calculateFitSize(logoSize.w, logoSize.h, 1.2, 0.36);
     slide.addImage({
-      path: 'zibis_logo.png',
+      path: logoPath,
       x: 9.64 - logoFit.w,
       y: 0.22 + (0.36 - logoFit.h) / 2,
       w: logoFit.w,
