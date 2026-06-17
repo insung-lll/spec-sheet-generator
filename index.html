@@ -982,6 +982,320 @@ input[type="file"] { display: none; }
 .empty-state p {
   font-size: 14px;
 }
+
+/* =====================================================
+   RAW DATA REQUESTS STYLES
+   ===================================================== */
+.home-main-tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 32px;
+}
+.main-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.main-tab-btn:hover {
+  color: #1e293b;
+}
+.main-tab-btn.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.requests-container {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .requests-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.request-form-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  position: sticky;
+  top: 20px;
+}
+.request-form-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.request-form-group {
+  margin-bottom: 16px;
+}
+.request-form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.request-form-group input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.request-form-group input[type="text"]:focus {
+  border-color: #2563eb;
+}
+
+.priority-selector {
+  display: flex;
+  gap: 8px;
+}
+.priority-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: white;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.priority-btn[data-priority="긴급"].active {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+.priority-btn[data-priority="우선"].active {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #d97706;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+.priority-btn[data-priority="보통"].active {
+  background: #f0fdf4;
+  border-color: #10b981;
+  color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.request-upload-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+.request-upload-zone:hover, .request-upload-zone.dragover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+.request-upload-zone .icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+.request-upload-zone span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+}
+.request-upload-zone .file-name {
+  font-weight: 600;
+  color: #0f172a;
+  margin-top: 4px;
+}
+.request-upload-preview {
+  margin-top: 8px;
+  max-height: 120px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-submit-request {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+  display: block;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-submit-request:hover {
+  background: #1d4ed8;
+}
+
+.request-list-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+.request-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.request-list-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.request-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+.request-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+}
+.request-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(0,0,0,0.04);
+}
+.request-card-thumb {
+  height: 150px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.request-card-thumb img {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
+}
+.req-priority-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.req-priority-badge.priority-긴급 { background: #ef4444; }
+.req-priority-badge.priority-우선 { background: #f59e0b; }
+.req-priority-badge.priority-보통 { background: #64748b; }
+
+.req-status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.req-status-badge.status-pending { background: #475569; }
+.req-status-badge.status-completed { background: #10b981; }
+
+.request-card-info {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.request-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+.request-card-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: auto;
+}
+.request-card-actions {
+  display: flex;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+.req-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.req-btn-create {
+  color: #2563eb;
+}
+.req-btn-create:hover {
+  background: #eff6ff;
+}
+.req-btn-status {
+  color: #475569;
+}
+.req-btn-status:hover {
+  background: #f1f5f9;
+}
+.req-btn-dl {
+  color: #0ea5e9;
+}
+.req-btn-dl:hover {
+  background: #f0f9ff;
+}
+.req-btn-del {
+  color: #ef4444;
+  border-left: 1px solid #f1f5f9;
+}
+.req-btn-del:hover {
+  background: #fef2f2;
+}
 </style>
 </head>
 <body>
@@ -1212,39 +1526,97 @@ input[type="file"] { display: none; }
 <!-- ===== HOME SCREEN ===== -->
 <div class="home-screen" id="home-screen">
   <div class="home-header">
-    <h2>ZIBIS 스펙시트 보관함</h2>
+    <h2>ZIBIS 스펙시트 매니저</h2>
   </div>
   <div class="home-body">
-    <div class="home-hero">
-      <h1>스펙시트 보관함</h1>
-      <p>작성된 스펙시트를 불러오거나 카테고리별로 모아서 관리할 수 있습니다.</p>
-      <button class="btn-create-new" id="btn-create-new">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        새 스펙시트 만들기
-      </button>
+    <!-- Main Tabs -->
+    <div class="home-main-tabs">
+      <button class="main-tab-btn active" id="tab-btn-cabinet" data-tab="cabinet">📂 스펙시트 보관함</button>
+      <button class="main-tab-btn" id="tab-btn-requests" data-tab="requests">📥 로우데이터 요청함</button>
     </div>
 
-    <div class="home-controls">
-      <div class="home-categories" id="home-category-tabs">
-        <button class="home-cat-tab active" data-cat="전체">전체</button>
-        <button class="home-cat-tab" data-cat="DOWN LIGHT">DOWN LIGHT</button>
-        <button class="home-cat-tab" data-cat="PANEL LIGHT">PANEL LIGHT</button>
-        <button class="home-cat-tab" data-cat="SPOT LIGHT">SPOT LIGHT</button>
-        <button class="home-cat-tab" data-cat="TRACK LIGHT">TRACK LIGHT</button>
-        <button class="home-cat-tab" data-cat="LINEAR LIGHT">LINEAR LIGHT</button>
-        <button class="home-cat-tab" data-cat="WALL LIGHT">WALL LIGHT</button>
-        <button class="home-cat-tab" data-cat="CEILING LIGHT">CEILING LIGHT</button>
+    <!-- Panel 1: Cabinet -->
+    <div id="panel-cabinet">
+      <div class="home-hero">
+        <h1>스펙시트 보관함</h1>
+        <p>작성된 스펙시트를 불러오거나 카테고리별로 모아서 관리할 수 있습니다.</p>
+        <button class="btn-create-new" id="btn-create-new">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          새 스펙시트 만들기
+        </button>
       </div>
-      <div class="home-search">
-        <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
+
+      <div class="home-controls">
+        <div class="home-categories" id="home-category-tabs">
+          <button class="home-cat-tab active" data-cat="전체">전체</button>
+          <button class="home-cat-tab" data-cat="DOWN LIGHT">DOWN LIGHT</button>
+          <button class="home-cat-tab" data-cat="PANEL LIGHT">PANEL LIGHT</button>
+          <button class="home-cat-tab" data-cat="SPOT LIGHT">SPOT LIGHT</button>
+          <button class="home-cat-tab" data-cat="TRACK LIGHT">TRACK LIGHT</button>
+          <button class="home-cat-tab" data-cat="LINEAR LIGHT">LINEAR LIGHT</button>
+          <button class="home-cat-tab" data-cat="WALL LIGHT">WALL LIGHT</button>
+          <button class="home-cat-tab" data-cat="CEILING LIGHT">CEILING LIGHT</button>
+        </div>
+        <div class="home-search">
+          <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
+        </div>
+      </div>
+
+      <div class="grid-sheets" id="grid-sheets">
+        <!-- Cards will be dynamically loaded here -->
       </div>
     </div>
 
-    <div class="grid-sheets" id="grid-sheets">
-      <!-- Cards will be dynamically loaded here -->
+    <!-- Panel 2: Requests -->
+    <div id="panel-requests" style="display: none;">
+      <div class="requests-container">
+        
+        <!-- Left Side: Request Form -->
+        <div class="request-form-card">
+          <h3>📝 로우데이터 요청 등록</h3>
+          
+          <div class="request-form-group">
+            <label>요청 제목 / 제품 설명 *</label>
+            <input type="text" id="req-input-title" placeholder="예) 3인치 COB 다운라이트 신규">
+          </div>
+          
+          <div class="request-form-group">
+            <label>우선순위 *</label>
+            <div class="priority-selector" id="req-priority-selector">
+              <button type="button" class="priority-btn active" data-priority="보통">보통</button>
+              <button type="button" class="priority-btn" data-priority="우선">우선</button>
+              <button type="button" class="priority-btn" data-priority="긴급">긴급</button>
+            </div>
+          </div>
+          
+          <div class="request-form-group">
+            <label>도면 / 제품 파일 (JPG, PNG) *</label>
+            <div class="request-upload-zone" id="req-upload-zone">
+              <span class="icon">📁</span>
+              <span id="req-upload-text">파일을 드래그하거나 클릭하여 업로드</span>
+              <span class="file-name" id="req-upload-filename" style="display:none;"></span>
+              <img class="request-upload-preview" id="req-upload-preview" style="display:none;">
+            </div>
+            <input type="file" id="fi-request-raw" accept="image/png, image/jpeg, image/jpg" style="display:none;">
+          </div>
+          
+          <button type="button" class="btn-submit-request" id="btn-submit-request">요청 등록하기</button>
+        </div>
+        
+        <!-- Right Side: Request List -->
+        <div class="request-list-wrapper">
+          <div class="request-list-header">
+            <h3>요청 목록</h3>
+          </div>
+          <div class="request-grid" id="grid-requests">
+            <!-- Dynamically rendered raw requests will appear here -->
+          </div>
+        </div>
+        
+      </div>
     </div>
   </div>
 </div>
@@ -3451,11 +3823,12 @@ function loadSpecSheet(id) {
   state.isInitializing = false;
 }
 
-function createNewSpecSheet() {
+function createNewSpecSheet(prefilledTitle = '', prefilledImageUrl = null) {
   state.isInitializing = true;
   state.currentId = null;
   
-  state.productUrl = state.bgRemovedUrl = null;
+  state.productUrl = prefilledImageUrl;
+  state.bgRemovedUrl = null;
   state.dimUrl1 = state.bgRemovedDimUrl1 = null;
   state.dimUrl2 = state.bgRemovedDimUrl2 = null;
   state.productScale = 1.0;
@@ -3468,18 +3841,28 @@ function createNewSpecSheet() {
   q('lbl-brightness-value').textContent = '100%';
   q('lbl-dim1-scale-value').textContent = '100%';
   q('lbl-dim2-scale-value').textContent = '100%';
-  q('product-scale-control').style.display = 'none';
-  q('product-brightness-control').style.display = 'none';
+  
+  if (prefilledImageUrl) {
+    q('product-scale-control').style.display = 'flex';
+    q('product-brightness-control').style.display = 'flex';
+    setBoxImage('box-product', prefilledImageUrl);
+    q('btn-remove-bg').disabled = (remainingUses() === 0);
+    q('bg-status').textContent = '배경 제거를 실행할 수 있습니다';
+  } else {
+    q('product-scale-control').style.display = 'none';
+    q('product-brightness-control').style.display = 'none';
+    clearBox('box-product');
+    q('btn-remove-bg').disabled = true;
+    q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
+  }
+  
   q('dim1-scale-control').style.display = 'none';
   q('dim2-scale-control').style.display = 'none';
 
-  clearBox('box-product');
   clearBox('box-dim1');
   clearBox('box-dim2');
-  q('btn-remove-bg').disabled = true;
   q('btn-dim1-rmbg').disabled = true;
   q('btn-dim2-rmbg').disabled = true;
-  q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
 
   q('btn-mode-light').classList.add('active');
   q('btn-mode-dark').classList.remove('active');
@@ -3489,16 +3872,165 @@ function createNewSpecSheet() {
   customOptions = [];
   renderCustomOptions();
 
-  ['f-name','f-partno'].forEach(id => { const el = q(id); if (el) el.value = ''; });
+  q('f-name').value = prefilledTitle || '';
+  q('f-partno').value = '';
   q('f-cat').selectedIndex = 0;
 
-  q('editor-title').textContent = '새 스펙시트 작성';
+  q('editor-title').textContent = prefilledTitle ? '스펙시트 제작' : '새 스펙시트 작성';
   q('home-screen').style.display = 'none';
 
   updatePreview();
-  state.isDirty = false;
+  state.isDirty = !!prefilledImageUrl; // Dirty if we loaded an image from a request
   state.isInitializing = false;
 }
+
+// ── Raw Requests State ────────────────────────────────
+let activeMainTab = 'cabinet';
+let requestUploadFileUrl = null;
+let requestSelectedPriority = '보통';
+
+function renderRawRequests() {
+  const grid = q('grid-requests');
+  if (!grid) return;
+  
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_raw_requests');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+  
+  grid.innerHTML = '';
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <h3>등록된 요청이 없습니다.</h3>
+        <p>새로운 도면이나 이미지 파일을 업로드하여 스펙시트 제작을 요청해 보세요!</p>
+      </div>
+    `;
+    return;
+  }
+  
+  list.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'request-card';
+    
+    const dateStr = new Date(item.createdAt).toLocaleDateString('ko-KR', {
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+    
+    const priorityLabel = item.priority || '보통';
+    const statusLabel = item.status === 'Completed' ? '제작완료' : '대기중';
+    const statusClass = item.status === 'Completed' ? 'status-completed' : 'status-pending';
+    
+    card.innerHTML = `
+      <div class="request-card-thumb">
+        <span class="req-priority-badge priority-${priorityLabel}">${priorityLabel}</span>
+        <span class="req-status-badge ${statusClass}">${statusLabel}</span>
+        <img src="${item.imageUrl}" alt="${esc(item.title)}">
+      </div>
+      <div class="request-card-info">
+        <div class="request-card-title">${esc(item.title)}</div>
+        <div class="request-card-meta">${dateStr}</div>
+      </div>
+      <div class="request-card-actions">
+        <button class="req-btn req-btn-create" title="스펙시트 제작하기">🛠️ 제작</button>
+        <button class="req-btn req-btn-status" title="상태 변경">${item.status === 'Completed' ? '🔄 대기중' : '✅ 완료'}</button>
+        <button class="req-btn req-btn-dl" title="원본 다운로드">💾 다운</button>
+        <button class="req-btn req-btn-del" title="요청 삭제">🗑️</button>
+      </div>
+    `;
+    
+    // Bind actions
+    card.querySelector('.req-btn-create').addEventListener('click', () => {
+      createNewSpecSheet(item.title, item.imageUrl);
+    });
+    
+    card.querySelector('.req-btn-status').addEventListener('click', () => {
+      toggleRequestStatus(item.id);
+    });
+    
+    card.querySelector('.req-btn-dl').addEventListener('click', () => {
+      downloadRawRequestFile(item.title, item.imageUrl);
+    });
+    
+    card.querySelector('.req-btn-del').addEventListener('click', () => {
+      if (confirm(`'${item.title}' 요청을 삭제하시겠습니까?`)) {
+        deleteRequest(item.id);
+      }
+    });
+    
+    grid.appendChild(card);
+  });
+}
+
+function toggleRequestStatus(id) {
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_raw_requests');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+  
+  const idx = list.findIndex(item => item.id === id);
+  if (idx !== -1) {
+    list[idx].status = list[idx].status === 'Completed' ? 'Pending' : 'Completed';
+    localStorage.setItem('zibis_raw_requests', JSON.stringify(list));
+    renderRawRequests();
+    showToast('상태가 변경되었습니다.');
+  }
+}
+
+function deleteRequest(id) {
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_raw_requests');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+  
+  list = list.filter(item => item.id !== id);
+  localStorage.setItem('zibis_raw_requests', JSON.stringify(list));
+  renderRawRequests();
+  showToast('요청이 삭제되었습니다.');
+}
+
+function downloadRawRequestFile(title, dataUrl) {
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  
+  let ext = 'png';
+  if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) {
+    ext = 'jpg';
+  }
+  
+  link.download = `${title.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_raw.${ext}`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function handleRequestFile(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showToast('⚠️ 이미지 파일(PNG, JPG, JPEG)만 업로드할 수 있습니다.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    requestUploadFileUrl = e.target.result;
+    q('req-upload-text').style.display = 'none';
+    q('req-upload-filename').textContent = file.name;
+    q('req-upload-filename').style.display = 'block';
+    q('req-upload-preview').src = requestUploadFileUrl;
+    q('req-upload-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
 
 // ── Bind Home Screen UI Events ────────────────────────
 q('home-category-tabs').querySelectorAll('.home-cat-tab').forEach(tab => {
@@ -3511,7 +4043,7 @@ q('home-category-tabs').querySelectorAll('.home-cat-tab').forEach(tab => {
 });
 
 q('search-input').addEventListener('input', renderHomeSheets);
-q('btn-create-new').addEventListener('click', createNewSpecSheet);
+q('btn-create-new').addEventListener('click', () => createNewSpecSheet());
 q('btn-save-sheet').addEventListener('click', saveCurrentSpecSheet);
 
 q('btn-back-home').addEventListener('click', () => {
@@ -3520,12 +4052,116 @@ q('btn-back-home').addEventListener('click', () => {
   }
   q('home-screen').style.display = 'flex';
   renderHomeSheets();
+  if (activeMainTab === 'requests') {
+    renderRawRequests();
+  }
+});
+
+// Main Tab switching
+q('tab-btn-cabinet').addEventListener('click', () => {
+  q('tab-btn-cabinet').classList.add('active');
+  q('tab-btn-requests').classList.remove('active');
+  q('panel-cabinet').style.display = 'block';
+  q('panel-requests').style.display = 'none';
+  activeMainTab = 'cabinet';
+  renderHomeSheets();
+});
+
+q('tab-btn-requests').addEventListener('click', () => {
+  q('tab-btn-cabinet').classList.remove('active');
+  q('tab-btn-requests').classList.add('active');
+  q('panel-cabinet').style.display = 'none';
+  q('panel-requests').style.display = 'block';
+  activeMainTab = 'requests';
+  renderRawRequests();
+});
+
+// Priority selector inside requests
+q('req-priority-selector').querySelectorAll('.priority-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    q('req-priority-selector').querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    requestSelectedPriority = btn.dataset.priority;
+  });
+});
+
+// Upload zone click and files change
+q('req-upload-zone').addEventListener('click', () => {
+  q('fi-request-raw').click();
+});
+q('fi-request-raw').addEventListener('change', (e) => {
+  handleRequestFile(e.target.files[0]);
+});
+
+// Drag & drop for request upload zone
+const reqZone = q('req-upload-zone');
+reqZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  reqZone.classList.add('dragover');
+});
+reqZone.addEventListener('dragleave', () => {
+  reqZone.classList.remove('dragover');
+});
+reqZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  reqZone.classList.remove('dragover');
+  handleRequestFile(e.dataTransfer.files[0]);
+});
+
+// Submit request click
+q('btn-submit-request').addEventListener('click', () => {
+  const title = q('req-input-title').value.trim();
+  if (!title) {
+    alert('요청 제목을 입력해주세요.');
+    return;
+  }
+  if (!requestUploadFileUrl) {
+    alert('도면/제품 이미지 파일을 업로드해주세요.');
+    return;
+  }
+  
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_raw_requests');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+  
+  const req = {
+    id: 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+    title: title,
+    priority: requestSelectedPriority,
+    imageUrl: requestUploadFileUrl,
+    status: 'Pending',
+    createdAt: Date.now()
+  };
+  
+  list.unshift(req);
+  localStorage.setItem('zibis_raw_requests', JSON.stringify(list));
+  
+  // Reset Form
+  q('req-input-title').value = '';
+  q('fi-request-raw').value = '';
+  requestUploadFileUrl = null;
+  requestSelectedPriority = '보통';
+  q('req-priority-selector').querySelectorAll('.priority-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.priority === '보통');
+  });
+  q('req-upload-text').style.display = 'block';
+  q('req-upload-filename').style.display = 'none';
+  q('req-upload-preview').style.display = 'none';
+  q('req-upload-preview').src = '';
+  
+  renderRawRequests();
+  showToast('✅ 요청이 등록되었습니다.');
 });
 
 // ── Init ──────────────────────────────────────────────
 renderCounter();
 fetchServerCredits();
 renderHomeSheets();
+renderRawRequests();
 q('home-screen').style.display = 'flex';
 
 </script>
