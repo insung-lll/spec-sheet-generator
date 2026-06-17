@@ -3641,6 +3641,44 @@ async function renderHomeSheets() {
   });
 }
 
+async function isImageUrlReferenced(url, excludeSheetId = null, excludeRequestId = null) {
+  try {
+    const { data: sheets, error: sheetsErr } = await supabase
+      .from('spec_sheets')
+      .select('id, product_url, bg_removed_url, dim_url1, bg_removed_dim_url1, dim_url2, bg_removed_dim_url2');
+    if (sheetsErr) throw sheetsErr;
+
+    for (const sheet of sheets) {
+      if (excludeSheetId && sheet.id === excludeSheetId) continue;
+      if (sheet.product_url === url ||
+          sheet.bg_removed_url === url ||
+          sheet.dim_url1 === url ||
+          sheet.bg_removed_dim_url1 === url ||
+          sheet.dim_url2 === url ||
+          sheet.bg_removed_dim_url2 === url) {
+        return true;
+      }
+    }
+
+    const { data: reqs, error: reqsErr } = await supabase
+      .from('raw_requests')
+      .select('id, image_urls');
+    if (reqsErr) throw reqsErr;
+
+    for (const req of reqs) {
+      if (excludeRequestId && req.id === excludeRequestId) continue;
+      if (req.image_urls && req.image_urls.includes(url)) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch (err) {
+    console.error('Error checking image reference:', err);
+    return true;
+  }
+}
+
 async function deleteSpecSheet(id) {
   try {
     // 1. Fetch images to delete from Storage
@@ -3660,12 +3698,18 @@ async function deleteSpecSheet(id) {
         item.bg_removed_dim_url2
       ].filter(Boolean);
       
-      const paths = urls
-        .filter(url => url.includes('/blueprints/'))
-        .map(url => url.split('/blueprints/')[1]);
+      const pathsToDelete = [];
+      for (const url of urls) {
+        if (url.includes('/blueprints/')) {
+          const isReferenced = await isImageUrlReferenced(url, id, null);
+          if (!isReferenced) {
+            pathsToDelete.push(url.split('/blueprints/')[1]);
+          }
+        }
+      }
         
-      if (paths.length > 0) {
-        await supabase.storage.from('blueprints').remove(paths);
+      if (pathsToDelete.length > 0) {
+        await supabase.storage.from('blueprints').remove(pathsToDelete);
       }
     }
   } catch (err) {
@@ -4332,12 +4376,18 @@ async function deleteRequest(id) {
       .single();
 
     if (item && item.image_urls && item.image_urls.length > 0) {
-      const paths = item.image_urls
-        .filter(url => url.includes('/blueprints/'))
-        .map(url => url.split('/blueprints/')[1]);
+      const pathsToDelete = [];
+      for (const url of item.image_urls) {
+        if (url.includes('/blueprints/')) {
+          const isReferenced = await isImageUrlReferenced(url, null, id);
+          if (!isReferenced) {
+            pathsToDelete.push(url.split('/blueprints/')[1]);
+          }
+        }
+      }
         
-      if (paths.length > 0) {
-        await supabase.storage.from('blueprints').remove(paths);
+      if (pathsToDelete.length > 0) {
+        await supabase.storage.from('blueprints').remove(pathsToDelete);
       }
     }
   } catch (err) {
