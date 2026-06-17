@@ -724,13 +724,269 @@ input[type="file"] { display: none; }
   pointer-events: all;
   cursor: default;
 }
+
+/* ===== HOME SCREEN ===== */
+.home-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #f8fafc;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.home-header {
+  background: #111827;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  color: white;
+}
+.home-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+.home-body {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+.home-hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.home-hero h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+.home-hero p {
+  color: #64748b;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+.btn-create-new {
+  background: #10b981;
+  color: white;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-create-new:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.home-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+}
+.home-categories {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.home-cat-tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.home-cat-tab:hover {
+  background: #f1f5f9;
+}
+.home-cat-tab.active {
+  background: #1e293b;
+  color: white;
+  border-color: #1e293b;
+}
+.home-search {
+  position: relative;
+  width: 280px;
+}
+.home-search input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 13px;
+  outline: none;
+}
+.home-search::before {
+  content: "🔍";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.grid-sheets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+.sheet-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.sheet-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+}
+.sheet-thumbnail {
+  height: 160px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.sheet-thumbnail img {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+}
+.sheet-thumbnail .placeholder-thumb {
+  font-size: 40px;
+  opacity: 0.25;
+}
+.sheet-cat-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15,23,42,0.75);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+.sheet-info {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.sheet-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.sheet-partno {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.sheet-date {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: auto;
+}
+.sheet-actions {
+  display: flex;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+.sheet-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sheet-btn.btn-load {
+  color: #2563eb;
+}
+.sheet-btn.btn-load:hover {
+  background: #eff6ff;
+}
+.sheet-btn.btn-delete {
+  color: #ef4444;
+  border-left: 1px solid #f1f5f9;
+}
+.sheet-btn.btn-delete:hover {
+  background: #fef2f2;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 64px 24px;
+  color: #64748b;
+}
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 8px;
+}
+.empty-state p {
+  font-size: 14px;
+}
 </style>
 </head>
 <body>
 
 <!-- ===== APP HEADER ===== -->
-<div class="app-header">
-  <h1>등기구 스펙시트 생성기</h1>
+<div class="app-header" style="justify-content: space-between; padding-right: 20px;">
+  <div style="display:flex; align-items:center; gap:8px;">
+    <button class="btn btn-ghost" id="btn-back-home" style="color:white; font-size:12px; padding:6px 12px; border:1px solid rgba(255,255,255,0.2);">< 홈으로</button>
+    <h1 id="editor-title" style="margin-left: 8px;">새 스펙시트 작성</h1>
+  </div>
+  
+  <div style="display:flex; gap:8px;">
+    <button class="btn" id="btn-save-sheet" style="background:#10b981; color:white; font-weight:700;">💾 저장</button>
+  </div>
 </div>
 
 <!-- ===== MAIN LAYOUT ===== -->
@@ -939,6 +1195,40 @@ input[type="file"] { display: none; }
 
 </div><!-- /.app-layout -->
 
+<!-- ===== HOME SCREEN ===== -->
+<div class="home-screen" id="home-screen">
+  <div class="home-header">
+    <h2>ZIBIS 스펙시트 보관함</h2>
+  </div>
+  <div class="home-body">
+    <div class="home-hero">
+      <h1>스펙시트 보관함</h1>
+      <p>작성된 스펙시트를 불러오거나 카테고리별로 모아서 관리할 수 있습니다.</p>
+      <button class="btn-create-new" id="btn-create-new">➕ 새 스펙시트 만들기</button>
+    </div>
+
+    <div class="home-controls">
+      <div class="home-categories" id="home-category-tabs">
+        <button class="home-cat-tab active" data-cat="전체">전체</button>
+        <button class="home-cat-tab" data-cat="DOWN LIGHT">DOWN LIGHT</button>
+        <button class="home-cat-tab" data-cat="PANEL LIGHT">PANEL LIGHT</button>
+        <button class="home-cat-tab" data-cat="SPOT LIGHT">SPOT LIGHT</button>
+        <button class="home-cat-tab" data-cat="TRACK LIGHT">TRACK LIGHT</button>
+        <button class="home-cat-tab" data-cat="LINEAR LIGHT">LINEAR LIGHT</button>
+        <button class="home-cat-tab" data-cat="WALL LIGHT">WALL LIGHT</button>
+        <button class="home-cat-tab" data-cat="CEILING LIGHT">CEILING LIGHT</button>
+      </div>
+      <div class="home-search">
+        <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
+      </div>
+    </div>
+
+    <div class="grid-sheets" id="grid-sheets">
+      <!-- Cards will be dynamically loaded here -->
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- =====================================================
@@ -959,6 +1249,7 @@ const state = {
   productBrightness: 100,
   dimScale1:        1.0,
   dimScale2:        1.0,
+  currentId:        null,
 };
 
 let customOptions = [];
@@ -2678,10 +2969,319 @@ q('btn-reset').addEventListener('click', () => {
   updatePreview();
 });
 
+// ── Home Screen & Save / Load Operations ────────────────
+let activeHomeCategory = '전체';
+
+function renderHomeSheets() {
+  const grid = q('grid-sheets');
+  if (!grid) return;
+
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_spec_sheets');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+
+  const query = (q('search-input')?.value || '').trim().toLowerCase();
+
+  // Filter list
+  let filtered = list;
+  if (activeHomeCategory !== '전체') {
+    filtered = filtered.filter(item => item.category === activeHomeCategory);
+  }
+  if (query) {
+    filtered = filtered.filter(item => 
+      (item.name && item.name.toLowerCase().includes(query)) ||
+      (item.partno && item.partno.toLowerCase().includes(query))
+    );
+  }
+
+  grid.innerHTML = '';
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <h3>저장된 스펙시트가 없습니다.</h3>
+        <p>${query || activeHomeCategory !== '전체' ? '검색 필터에 일치하는 항목이 없습니다.' : '새로운 스펙시트를 생성하고 보관해 보세요!'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  filtered.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'sheet-card';
+    
+    const dateStr = new Date(item.createdAt).toLocaleDateString('ko-KR', {
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+
+    const thumbHtml = (item.bgRemovedUrl || item.productUrl)
+      ? `<img src="${item.bgRemovedUrl || item.productUrl}" alt="${esc(item.name)}">`
+      : `<span class="placeholder-thumb">📄</span>`;
+
+    card.innerHTML = `
+      <div class="sheet-thumbnail">
+        <span class="sheet-cat-badge">${esc(item.category)}</span>
+        ${thumbHtml}
+      </div>
+      <div class="sheet-info">
+        <div class="sheet-name">${esc(item.name || '이름 없음')}</div>
+        <div class="sheet-partno">${esc(item.partno || '-')}</div>
+        <div class="sheet-date">${dateStr}</div>
+      </div>
+      <div class="sheet-actions">
+        <button class="sheet-btn btn-load" data-id="${item.id}">📂 불러오기</button>
+        <button class="sheet-btn btn-delete" data-id="${item.id}">🗑️ 삭제</button>
+      </div>
+    `;
+
+    // Bind load and delete events
+    card.querySelector('.btn-load').addEventListener('click', () => loadSpecSheet(item.id));
+    card.querySelector('.btn-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm(`'${item.name || '이름 없음'}' 스펙시트를 보관함에서 삭제할까요?`)) {
+        deleteSpecSheet(item.id);
+      }
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+function deleteSpecSheet(id) {
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_spec_sheets');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+
+  list = list.filter(item => item.id !== id);
+  localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
+  showToast('🗑️ 스펙시트가 삭제되었습니다.');
+  renderHomeSheets();
+}
+
+function saveCurrentSpecSheet() {
+  const data = gatherForm();
+  
+  if (!data.name.trim()) {
+    showToast('⚠️ 제품명을 입력해 주세요.');
+    q('f-name').focus();
+    return;
+  }
+
+  const specData = {
+    id: state.currentId || Date.now().toString(),
+    category: data.category,
+    name: data.name,
+    partno: data.partno,
+    customs: data.customs,
+    productUrl: state.productUrl,
+    bgRemovedUrl: state.bgRemovedUrl,
+    productScale: state.productScale,
+    productBrightness: state.productBrightness,
+    dimUrl1: state.dimUrl1,
+    bgRemovedDimUrl1: state.bgRemovedDimUrl1,
+    dimScale1: state.dimScale1,
+    dimUrl2: state.dimUrl2,
+    bgRemovedDimUrl2: state.bgRemovedDimUrl2,
+    dimScale2: state.dimScale2,
+    darkMode: state.darkMode,
+    dimensions: JSON.parse(JSON.stringify(dimensions)),
+    dimIdCounter: dimIdCounter,
+    createdAt: Date.now()
+  };
+
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_spec_sheets');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+
+  const idx = list.findIndex(item => item.id === specData.id);
+  if (idx > -1) {
+    specData.createdAt = list[idx].createdAt; // Keep original creation date
+    list[idx] = specData;
+  } else {
+    list.unshift(specData);
+  }
+
+  localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
+  state.currentId = specData.id;
+  
+  q('editor-title').textContent = specData.name;
+  showToast('✅ 보관함에 저장되었습니다!');
+  renderHomeSheets();
+}
+
+function loadSpecSheet(id) {
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_spec_sheets');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+
+  const data = list.find(item => item.id === id);
+  if (!data) {
+    showToast('⚠️ 데이터를 찾을 수 없습니다.');
+    return;
+  }
+
+  state.currentId = data.id;
+  
+  q('f-cat').value = data.category;
+  q('f-name').value = data.name;
+  q('f-partno').value = data.partno;
+  
+  customOptions = data.customs || [];
+  renderCustomOptions();
+
+  state.productUrl = data.productUrl;
+  state.bgRemovedUrl = data.bgRemovedUrl;
+  state.productScale = data.productScale ?? 1.0;
+  state.productBrightness = data.productBrightness ?? 100;
+
+  state.dimUrl1 = data.dimUrl1;
+  state.bgRemovedDimUrl1 = data.bgRemovedDimUrl1;
+  state.dimScale1 = data.dimScale1 ?? 1.0;
+
+  state.dimUrl2 = data.dimUrl2;
+  state.bgRemovedDimUrl2 = data.bgRemovedDimUrl2;
+  state.dimScale2 = data.dimScale2 ?? 1.0;
+
+  state.darkMode = data.darkMode || false;
+
+  dimensions = data.dimensions || [];
+  dimIdCounter = data.dimIdCounter || 0;
+
+  q('lbl-scale-value').textContent = `${Math.round(state.productScale * 100)}%`;
+  q('lbl-brightness-value').textContent = `${state.productBrightness}%`;
+  q('lbl-dim1-scale-value').textContent = `${Math.round(state.dimScale1 * 100)}%`;
+  q('lbl-dim2-scale-value').textContent = `${Math.round(state.dimScale2 * 100)}%`;
+
+  q('product-scale-control').style.display = state.productUrl ? 'flex' : 'none';
+  q('product-brightness-control').style.display = state.productUrl ? 'flex' : 'none';
+  q('dim1-scale-control').style.display = (state.dimUrl1 || state.bgRemovedDimUrl1) ? 'flex' : 'none';
+  q('dim2-scale-control').style.display = (state.dimUrl2 || state.bgRemovedDimUrl2) ? 'flex' : 'none';
+
+  if (state.bgRemovedUrl || state.productUrl) {
+    setBoxImage('box-product', state.bgRemovedUrl || state.productUrl);
+    q('btn-remove-bg').disabled = (remainingUses() === 0);
+  } else {
+    clearBox('box-product');
+    q('btn-remove-bg').disabled = true;
+  }
+
+  if (state.bgRemovedDimUrl1 || state.dimUrl1) {
+    setBoxImage('box-dim1', state.bgRemovedDimUrl1 || state.dimUrl1);
+    q('btn-dim1-rmbg').disabled = (remainingUses() === 0);
+  } else {
+    clearBox('box-dim1');
+    q('btn-dim1-rmbg').disabled = true;
+  }
+
+  if (state.bgRemovedDimUrl2 || state.dimUrl2) {
+    setBoxImage('box-dim2', state.bgRemovedDimUrl2 || state.dimUrl2);
+    q('btn-dim2-rmbg').disabled = (remainingUses() === 0);
+  } else {
+    clearBox('box-dim2');
+    q('btn-dim2-rmbg').disabled = true;
+  }
+
+  if (state.darkMode) {
+    q('btn-mode-light').classList.remove('active');
+    q('btn-mode-dark').classList.add('active');
+  } else {
+    q('btn-mode-light').classList.add('active');
+    q('btn-mode-dark').classList.remove('active');
+  }
+
+  q('editor-title').textContent = data.name || '스펙시트 수정';
+  q('home-screen').style.display = 'none';
+  
+  updatePreview();
+}
+
+function createNewSpecSheet() {
+  state.currentId = null;
+  
+  state.productUrl = state.bgRemovedUrl = null;
+  state.dimUrl1 = state.bgRemovedDimUrl1 = null;
+  state.dimUrl2 = state.bgRemovedDimUrl2 = null;
+  state.productScale = 1.0;
+  state.productBrightness = 100;
+  state.dimScale1 = 1.0;
+  state.dimScale2 = 1.0;
+  state.darkMode = false;
+
+  q('lbl-scale-value').textContent = '100%';
+  q('lbl-brightness-value').textContent = '100%';
+  q('lbl-dim1-scale-value').textContent = '100%';
+  q('lbl-dim2-scale-value').textContent = '100%';
+  q('product-scale-control').style.display = 'none';
+  q('product-brightness-control').style.display = 'none';
+  q('dim1-scale-control').style.display = 'none';
+  q('dim2-scale-control').style.display = 'none';
+
+  clearBox('box-product');
+  clearBox('box-dim1');
+  clearBox('box-dim2');
+  q('btn-remove-bg').disabled = true;
+  q('btn-dim1-rmbg').disabled = true;
+  q('btn-dim2-rmbg').disabled = true;
+  q('bg-status').textContent = '제품 이미지를 먼저 등록해주세요';
+
+  q('btn-mode-light').classList.add('active');
+  q('btn-mode-dark').classList.remove('active');
+
+  dimensions = [];
+  setDimToolState(false);
+  customOptions = [];
+  renderCustomOptions();
+
+  ['f-name','f-partno'].forEach(id => { const el = q(id); if (el) el.value = ''; });
+  q('f-cat').selectedIndex = 0;
+
+  q('editor-title').textContent = '새 스펙시트 작성';
+  q('home-screen').style.display = 'none';
+
+  updatePreview();
+}
+
+// ── Bind Home Screen UI Events ────────────────────────
+q('home-category-tabs').querySelectorAll('.home-cat-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    q('home-category-tabs').querySelectorAll('.home-cat-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeHomeCategory = tab.dataset.cat;
+    renderHomeSheets();
+  });
+});
+
+q('search-input').addEventListener('input', renderHomeSheets);
+q('btn-create-new').addEventListener('click', createNewSpecSheet);
+q('btn-save-sheet').addEventListener('click', saveCurrentSpecSheet);
+
+q('btn-back-home').addEventListener('click', () => {
+  if (confirm('홈 화면으로 이동할까요? 저장하지 않은 내용은 손실될 수 있습니다.')) {
+    q('home-screen').style.display = 'flex';
+    renderHomeSheets();
+  }
+});
+
 // ── Init ──────────────────────────────────────────────
 renderCounter();
 fetchServerCredits();
-updatePreview();
+renderHomeSheets();
+q('home-screen').style.display = 'flex';
 
 </script>
 </body>
