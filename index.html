@@ -980,12 +980,17 @@ input[type="file"] { display: none; }
 <!-- ===== APP HEADER ===== -->
 <div class="app-header" style="justify-content: space-between; padding-right: 20px;">
   <div style="display:flex; align-items:center; gap:8px;">
-    <button class="btn btn-ghost" id="btn-back-home" style="color:white; font-size:12px; padding:6px 12px; border:1px solid rgba(255,255,255,0.2);">< 홈으로</button>
+    <button class="btn btn-ghost" id="btn-back-home" style="color:white; padding:6px 10px; border:1px solid rgba(255,255,255,0.2); display:inline-flex; align-items:center; justify-content:center;" title="홈으로">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+    </button>
     <h1 id="editor-title" style="margin-left: 8px;">새 스펙시트 작성</h1>
   </div>
   
   <div style="display:flex; gap:8px;">
-    <button class="btn" id="btn-save-sheet" style="background:#10b981; color:white; font-weight:700;">💾 저장</button>
+    <button class="btn" id="btn-save-sheet" style="background:#2563eb; color:white; font-weight:700; border:none; padding:8px 16px;">저장</button>
   </div>
 </div>
 
