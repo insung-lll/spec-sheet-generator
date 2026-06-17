@@ -953,6 +953,12 @@ input[type="file"] { display: none; }
 .sheet-btn.btn-load:hover {
   background: #eff6ff;
 }
+.sheet-btn.btn-clone {
+  color: #475569;
+}
+.sheet-btn.btn-clone:hover {
+  background: #f1f5f9;
+}
 .sheet-btn.btn-delete {
   color: #ef4444;
   border-left: 1px solid #f1f5f9;
@@ -1264,6 +1270,8 @@ const state = {
   dimScale1:        1.0,
   dimScale2:        1.0,
   currentId:        null,
+  isDirty:          false,
+  isInitializing:   false,
 };
 
 let customOptions = [];
@@ -2482,6 +2490,9 @@ function buildSpec(container, d) {
 
 // ── Update Preview ────────────────────────────────────
 function updatePreview() {
+  if (!state.isInitializing) {
+    state.isDirty = true;
+  }
   const data = gatherForm();
   buildSpec(q('spec-preview'), data);
   // Re-attach SVG overlay (buildSpec clears innerHTML)
@@ -3059,6 +3070,7 @@ function renderHomeSheets() {
       </div>
       <div class="sheet-actions" style="display:flex; align-items:stretch;">
         <button class="sheet-btn btn-load" style="flex:1; border:none; padding:10px 4px; font-size:11px;">📂 불러오기</button>
+        <button class="sheet-btn btn-clone" style="flex:0 0 44px; border-left:1px solid #f1f5f9; padding:10px 4px; font-size:11px;" title="복제">📋</button>
         <div class="direct-download-group" style="display:flex; align-items:center; padding:0 6px; gap:4px; border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9; background:#f8fafc;">
           <button class="dir-dl-btn" data-fmt="PNG" style="border:none; background:#10b981; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PNG 다운로드">PNG</button>
           <button class="dir-dl-btn" data-fmt="PDF" style="border:none; background:#0284c7; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PDF 다운로드">PDF</button>
@@ -3068,8 +3080,12 @@ function renderHomeSheets() {
       </div>
     `;
 
-    // Bind load and delete events
+    // Bind load, clone, and delete events
     card.querySelector('.btn-load').addEventListener('click', () => loadSpecSheet(item.id));
+    card.querySelector('.btn-clone').addEventListener('click', (e) => {
+      e.stopPropagation();
+      cloneSpecSheet(item.id);
+    });
     card.querySelectorAll('.dir-dl-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -3099,6 +3115,31 @@ function deleteSpecSheet(id) {
   list = list.filter(item => item.id !== id);
   localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
   showToast('🗑️ 스펙시트가 삭제되었습니다.');
+  renderHomeSheets();
+}
+
+function cloneSpecSheet(id) {
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_spec_sheets');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+
+  const orig = list.find(item => item.id === id);
+  if (!orig) return;
+
+  const copy = JSON.parse(JSON.stringify(orig));
+  copy.id = Date.now().toString();
+  copy.name = copy.name + ' - 사본';
+  copy.createdAt = Date.now();
+
+  const origIdx = list.findIndex(item => item.id === id);
+  list.splice(origIdx + 1, 0, copy);
+
+  localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
+  showToast('📋 스펙시트가 복제되었습니다.');
   renderHomeSheets();
 }
 
@@ -3151,6 +3192,7 @@ function saveCurrentSpecSheet() {
 
   localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
   state.currentId = specData.id;
+  state.isDirty = false;
   
   q('editor-title').textContent = specData.name;
   showToast('✅ 보관함에 저장되었습니다!');
@@ -3316,6 +3358,7 @@ async function downloadSpecSheetDirectly(id, format) {
 }
 
 function loadSpecSheet(id) {
+  state.isInitializing = true;
   let list = [];
   try {
     const json = localStorage.getItem('zibis_spec_sheets');
@@ -3327,6 +3370,7 @@ function loadSpecSheet(id) {
   const data = list.find(item => item.id === id);
   if (!data) {
     showToast('⚠️ 데이터를 찾을 수 없습니다.');
+    state.isInitializing = false;
     return;
   }
 
@@ -3403,9 +3447,12 @@ function loadSpecSheet(id) {
   q('home-screen').style.display = 'none';
   
   updatePreview();
+  state.isDirty = false;
+  state.isInitializing = false;
 }
 
 function createNewSpecSheet() {
+  state.isInitializing = true;
   state.currentId = null;
   
   state.productUrl = state.bgRemovedUrl = null;
@@ -3449,6 +3496,8 @@ function createNewSpecSheet() {
   q('home-screen').style.display = 'none';
 
   updatePreview();
+  state.isDirty = false;
+  state.isInitializing = false;
 }
 
 // ── Bind Home Screen UI Events ────────────────────────
@@ -3466,10 +3515,11 @@ q('btn-create-new').addEventListener('click', createNewSpecSheet);
 q('btn-save-sheet').addEventListener('click', saveCurrentSpecSheet);
 
 q('btn-back-home').addEventListener('click', () => {
-  if (confirm('홈 화면으로 이동할까요? 저장하지 않은 내용은 손실될 수 있습니다.')) {
-    q('home-screen').style.display = 'flex';
-    renderHomeSheets();
+  if (state.isDirty) {
+    if (!confirm('홈 화면으로 이동할까요? 저장하지 않은 내용은 손실될 수 있습니다.')) return;
   }
+  q('home-screen').style.display = 'flex';
+  renderHomeSheets();
 });
 
 // ── Init ──────────────────────────────────────────────
