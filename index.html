@@ -2496,17 +2496,18 @@ function scalePreview() {
 window.addEventListener('resize', scalePreview);
 
 // ── Download PNG ──────────────────────────────────────
-q('btn-download').addEventListener('click', async () => {
+async function downloadAsPNG(silent = false) {
   const btn = q('btn-download');
-  btn.textContent = '⏳ 생성 중...';
-  btn.disabled = true;
+  if (!silent) {
+    btn.textContent = '⏳ 생성 중...';
+    btn.disabled = true;
+  }
   const wrapper = q('preview-wrapper');
   const savedTransform = wrapper.style.transform;
   const savedMargin = wrapper.style.marginBottom;
   wrapper.style.transform = 'none';
   wrapper.style.marginBottom = '0px';
 
-  // Hide delete buttons in SVG before export
   dimSvg.classList.remove('tool-active');
 
   const productImgUrl = state.bgRemovedUrl || state.productUrl;
@@ -2518,12 +2519,12 @@ q('btn-download').addEventListener('click', async () => {
 
   try {
     if (imgEl && productImgUrl && state.productBrightness !== 100) {
-      btn.textContent = '⏳ 밝기 반영 중...';
+      if (!silent) btn.textContent = '⏳ 밝기 반영 중...';
       originalSrc = imgEl.src;
       const processedUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
       imgEl.src = processedUrl;
       imgEl.style.filter = 'none';
-      btn.textContent = '⏳ 생성 중...';
+      if (!silent) btn.textContent = '⏳ 생성 중...';
     }
 
     if (isDark) {
@@ -2546,10 +2547,10 @@ q('btn-download').addEventListener('click', async () => {
     link.download = `spec_${name}_${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    showToast('✅ PNG 다운로드 완료!');
+    if (!silent) showToast('✅ PNG 다운로드 완료!');
   } catch(e) {
     console.error('[PNG error]', e);
-    showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
+    if (!silent) showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
     if (imgEl && originalSrc) {
       imgEl.src = originalSrc;
@@ -2566,16 +2567,21 @@ q('btn-download').addEventListener('click', async () => {
     wrapper.style.transform = savedTransform;
     wrapper.style.marginBottom = savedMargin;
     if (dimToolActive) dimSvg.classList.add('tool-active');
-    btn.textContent = 'PNG';
-    btn.disabled = false;
+    if (!silent) {
+      btn.textContent = 'PNG';
+      btn.disabled = false;
+    }
   }
-});
+}
+q('btn-download').addEventListener('click', () => downloadAsPNG(false));
 
 // ── Download PDF ──────────────────────────────────────
-q('btn-download-pdf').addEventListener('click', async () => {
+async function downloadAsPDF(silent = false) {
   const btn = q('btn-download-pdf');
-  btn.textContent = '⏳ 생성 중...';
-  btn.disabled = true;
+  if (!silent) {
+    btn.textContent = '⏳ 생성 중...';
+    btn.disabled = true;
+  }
   const wrapper = q('preview-wrapper');
   const savedTransform = wrapper.style.transform;
   const savedMargin = wrapper.style.marginBottom;
@@ -2593,12 +2599,12 @@ q('btn-download-pdf').addEventListener('click', async () => {
 
   try {
     if (imgEl && productImgUrl && state.productBrightness !== 100) {
-      btn.textContent = '⏳ 밝기 반영 중...';
+      if (!silent) btn.textContent = '⏳ 밝기 반영 중...';
       originalSrc = imgEl.src;
       const processedUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
       imgEl.src = processedUrl;
       imgEl.style.filter = 'none';
-      btn.textContent = '⏳ 생성 중...';
+      if (!silent) btn.textContent = '⏳ 생성 중...';
     }
 
     if (isDark) {
@@ -2630,10 +2636,10 @@ q('btn-download-pdf').addEventListener('click', async () => {
     pdf.addImage(imgData, 'JPEG', (pageW-imgW)/2, (pageH-imgH)/2, imgW, imgH);
     const name = q('f-name').value || '스펙시트';
     pdf.save(`spec_${name}_${Date.now()}.pdf`);
-    showToast('✅ PDF 다운로드 완료!');
+    if (!silent) showToast('✅ PDF 다운로드 완료!');
   } catch(e) {
     console.error('[PDF error]', e);
-    showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
+    if (!silent) showToast(`⚠️ 오류: ${e.message || '알 수 없는 오류'}`);
   } finally {
     if (imgEl && originalSrc) {
       imgEl.src = originalSrc;
@@ -2650,16 +2656,21 @@ q('btn-download-pdf').addEventListener('click', async () => {
     wrapper.style.transform = savedTransform;
     wrapper.style.marginBottom = savedMargin;
     if (dimToolActive) dimSvg.classList.add('tool-active');
-    btn.textContent = 'PDF';
-    btn.disabled = false;
+    if (!silent) {
+      btn.textContent = 'PDF';
+      btn.disabled = false;
+    }
   }
-});
+}
+q('btn-download-pdf').addEventListener('click', () => downloadAsPDF(false));
 
 // ── Download PPTX ─────────────────────────────────────
-q('btn-download-pptx').addEventListener('click', async () => {
+async function downloadAsPPTX(silent = false) {
   const btn = q('btn-download-pptx');
-  btn.textContent = '⏳ 생성 중...';
-  btn.disabled = true;
+  if (!silent) {
+    btn.textContent = '⏳ 생성 중...';
+    btn.disabled = true;
+  }
 
   try {
     if (typeof PptxGenJS === 'undefined') {
@@ -2732,9 +2743,9 @@ q('btn-download-pptx').addEventListener('click', async () => {
     // 3. Product Image
     let productImgUrl = state.bgRemovedUrl || state.productUrl;
     if (productImgUrl && state.productBrightness !== 100) {
-      btn.textContent = '⏳ 밝기 반영 중...';
+      if (!silent) btn.textContent = '⏳ 밝기 반영 중...';
       productImgUrl = await getProcessedProductImage(productImgUrl, state.productBrightness);
-      btn.textContent = '⏳ 생성 중...';
+      if (!silent) btn.textContent = '⏳ 생성 중...';
     }
 
     if (productImgUrl) {
@@ -3031,14 +3042,25 @@ function renderHomeSheets() {
         <div class="sheet-partno">${esc(item.partno || '-')}</div>
         <div class="sheet-date">${dateStr}</div>
       </div>
-      <div class="sheet-actions">
-        <button class="sheet-btn btn-load" data-id="${item.id}">📂 불러오기</button>
-        <button class="sheet-btn btn-delete" data-id="${item.id}">🗑️ 삭제</button>
+      <div class="sheet-actions" style="display:flex; align-items:stretch;">
+        <button class="sheet-btn btn-load" style="flex:1; border:none; padding:10px 4px; font-size:11px;">📂 불러오기</button>
+        <div class="direct-download-group" style="display:flex; align-items:center; padding:0 6px; gap:4px; border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9; background:#f8fafc;">
+          <button class="dir-dl-btn" data-fmt="PNG" style="border:none; background:#10b981; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PNG 다운로드">PNG</button>
+          <button class="dir-dl-btn" data-fmt="PDF" style="border:none; background:#0284c7; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PDF 다운로드">PDF</button>
+          <button class="dir-dl-btn" data-fmt="PPTX" style="border:none; background:#ea580c; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PPTX 다운로드">PPTX</button>
+        </div>
+        <button class="sheet-btn btn-delete" style="flex:0 0 44px; padding:10px 4px; font-size:11px;">🗑️</button>
       </div>
     `;
 
     // Bind load and delete events
     card.querySelector('.btn-load').addEventListener('click', () => loadSpecSheet(item.id));
+    card.querySelectorAll('.dir-dl-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadSpecSheetDirectly(item.id, btn.dataset.fmt);
+      });
+    });
     card.querySelector('.btn-delete').addEventListener('click', (e) => {
       e.stopPropagation();
       if (confirm(`'${item.name || '이름 없음'}' 스펙시트를 보관함에서 삭제할까요?`)) {
@@ -3118,6 +3140,164 @@ function saveCurrentSpecSheet() {
   q('editor-title').textContent = specData.name;
   showToast('✅ 보관함에 저장되었습니다!');
   renderHomeSheets();
+}
+
+function getCurrentStateSnapshot() {
+  return {
+    currentId: state.currentId,
+    productUrl: state.productUrl,
+    bgRemovedUrl: state.bgRemovedUrl,
+    productScale: state.productScale,
+    productBrightness: state.productBrightness,
+    dimUrl1: state.dimUrl1,
+    bgRemovedDimUrl1: state.bgRemovedDimUrl1,
+    dimScale1: state.dimScale1,
+    dimUrl2: state.dimUrl2,
+    bgRemovedDimUrl2: state.bgRemovedDimUrl2,
+    dimScale2: state.dimScale2,
+    darkMode: state.darkMode,
+    dimensions: JSON.parse(JSON.stringify(dimensions)),
+    dimIdCounter: dimIdCounter,
+    customOptions: JSON.parse(JSON.stringify(customOptions)),
+    fCatValue: q('f-cat').value,
+    fNameValue: q('f-name').value,
+    fPartnoValue: q('f-partno').value,
+  };
+}
+
+function restoreStateFromSnapshot(s) {
+  state.currentId = s.currentId;
+  state.productUrl = s.productUrl;
+  state.bgRemovedUrl = s.bgRemovedUrl;
+  state.productScale = s.productScale;
+  state.productBrightness = s.productBrightness;
+  state.dimUrl1 = s.dimUrl1;
+  state.bgRemovedDimUrl1 = s.bgRemovedDimUrl1;
+  state.dimScale1 = s.dimScale1;
+  state.dimUrl2 = s.dimUrl2;
+  state.bgRemovedDimUrl2 = s.bgRemovedDimUrl2;
+  state.dimScale2 = s.dimScale2;
+  state.darkMode = s.darkMode;
+  
+  dimensions = s.dimensions;
+  dimIdCounter = s.dimIdCounter;
+  customOptions = s.customOptions;
+
+  q('f-cat').value = s.fCatValue;
+  q('f-name').value = s.fNameValue;
+  q('f-partno').value = s.fPartnoValue;
+
+  renderCustomOptions();
+
+  q('lbl-scale-value').textContent = `${Math.round(state.productScale * 100)}%`;
+  q('lbl-brightness-value').textContent = `${state.productBrightness}%`;
+  q('lbl-dim1-scale-value').textContent = `${Math.round(state.dimScale1 * 100)}%`;
+  q('lbl-dim2-scale-value').textContent = `${Math.round(state.dimScale2 * 100)}%`;
+
+  q('product-scale-control').style.display = state.productUrl ? 'flex' : 'none';
+  q('product-brightness-control').style.display = state.productUrl ? 'flex' : 'none';
+  q('dim1-scale-control').style.display = (state.dimUrl1 || state.bgRemovedDimUrl1) ? 'flex' : 'none';
+  q('dim2-scale-control').style.display = (state.dimUrl2 || state.bgRemovedDimUrl2) ? 'flex' : 'none';
+
+  if (state.bgRemovedUrl || state.productUrl) {
+    setBoxImage('box-product', state.bgRemovedUrl || state.productUrl);
+    q('btn-remove-bg').disabled = (remainingUses() === 0);
+  } else {
+    clearBox('box-product');
+    q('btn-remove-bg').disabled = true;
+  }
+
+  if (state.bgRemovedDimUrl1 || state.dimUrl1) {
+    setBoxImage('box-dim1', state.bgRemovedDimUrl1 || state.dimUrl1);
+    q('btn-dim1-rmbg').disabled = (remainingUses() === 0);
+  } else {
+    clearBox('box-dim1');
+    q('btn-dim1-rmbg').disabled = true;
+  }
+
+  if (state.bgRemovedDimUrl2 || state.dimUrl2) {
+    setBoxImage('box-dim2', state.bgRemovedDimUrl2 || state.dimUrl2);
+    q('btn-dim2-rmbg').disabled = (remainingUses() === 0);
+  } else {
+    clearBox('box-dim2');
+    q('btn-dim2-rmbg').disabled = true;
+  }
+
+  if (state.darkMode) {
+    q('btn-mode-light').classList.remove('active');
+    q('btn-mode-dark').classList.add('active');
+  } else {
+    q('btn-mode-light').classList.add('active');
+    q('btn-mode-dark').classList.remove('active');
+  }
+
+  const savedName = s.fNameValue;
+  q('editor-title').textContent = savedName || (s.currentId ? '스펙시트 수정' : '새 스펙시트 작성');
+
+  updatePreview();
+}
+
+async function downloadSpecSheetDirectly(id, format) {
+  let list = [];
+  try {
+    const json = localStorage.getItem('zibis_spec_sheets');
+    if (json) list = JSON.parse(json);
+  } catch (e) {
+    console.error(e);
+  }
+
+  const data = list.find(item => item.id === id);
+  if (!data) {
+    showToast('⚠️ 데이터를 찾을 수 없습니다.');
+    return;
+  }
+
+  showToast(`⏳ ${data.name || '스펙시트'} ${format} 파일 생성 중...`);
+
+  // 1. Snapshot current editor state
+  const snapshot = getCurrentStateSnapshot();
+
+  // 2. Load target data silently
+  state.currentId = data.id;
+  q('f-cat').value = data.category;
+  q('f-name').value = data.name;
+  q('f-partno').value = data.partno;
+  customOptions = data.customs || [];
+  renderCustomOptions();
+
+  state.productUrl = data.productUrl;
+  state.bgRemovedUrl = data.bgRemovedUrl;
+  state.productScale = data.productScale ?? 1.0;
+  state.productBrightness = data.productBrightness ?? 100;
+  state.dimUrl1 = data.dimUrl1;
+  state.bgRemovedDimUrl1 = data.bgRemovedDimUrl1;
+  state.dimScale1 = data.dimScale1 ?? 1.0;
+  state.dimUrl2 = data.dimUrl2;
+  state.bgRemovedDimUrl2 = data.bgRemovedDimUrl2;
+  state.dimScale2 = data.dimScale2 ?? 1.0;
+  state.darkMode = data.darkMode || false;
+  dimensions = data.dimensions || [];
+  dimIdCounter = data.dimIdCounter || 0;
+
+  updatePreview();
+
+  // 3. Trigger download silently
+  try {
+    if (format === 'PNG') {
+      await downloadAsPNG(true);
+    } else if (format === 'PDF') {
+      await downloadAsPDF(true);
+    } else if (format === 'PPTX') {
+      await downloadAsPPTX(true);
+    }
+    showToast(`✅ ${format} 다운로드 완료!`);
+  } catch (err) {
+    console.error(err);
+    showToast('⚠️ 다운로드 중 오류가 발생했습니다.');
+  }
+
+  // 4. Restore editor state
+  restoreStateFromSnapshot(snapshot);
 }
 
 function loadSpecSheet(id) {
