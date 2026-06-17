@@ -8,6 +8,7 @@
 <script src="/vendor/html2canvas.min.js"></script>
 <script src="/vendor/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ===== RESET ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1701,6 +1702,48 @@ input[type="file"] { display: none; }
      SCRIPT
      ===================================================== -->
 <script type="module">
+
+// ── Supabase Config ────────────────────────────────────
+const SUPABASE_URL = "https://mjbsxfewgnpkijtwwzbu.supabase.co";
+const SUPABASE_KEY = "sb_publishable_4yKTA50rOX6nss26Swzn0g_oDXCoXJ3";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Supabase Image Upload Helper ───────────────────────
+async function uploadImageToSupabase(base64Data, filename) {
+  if (!base64Data) return null;
+  if (!base64Data.startsWith('data:')) {
+    return base64Data;
+  }
+  try {
+    const parts = base64Data.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const raw = window.atob(parts[1]);
+    const rawLength = raw.length;
+    const uInt8Array = new Uint8Array(rawLength);
+    for (let i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+    const blob = new Blob([uInt8Array], {type: contentType});
+    
+    const cleanName = filename.replace(/[^a-zA-Z0-9.]/g, '_');
+    const filePath = `uploads/${Date.now()}_${cleanName}`;
+    
+    const { data, error } = await supabase.storage.from('blueprints').upload(filePath, blob, {
+      contentType: contentType,
+      upsert: true
+    });
+    if (error) {
+      console.error('Upload error details:', error);
+      throw error;
+    }
+    
+    const { data: publicUrlData } = supabase.storage.from('blueprints').getPublicUrl(filePath);
+    return publicUrlData.publicUrl;
+  } catch (err) {
+    console.error('Failed to upload image to Supabase storage:', err);
+    throw err;
+  }
+}
 
 // ── State ─────────────────────────────────────────────
 const state = {
@@ -3455,17 +3498,42 @@ q('btn-reset').addEventListener('click', () => {
 // ── Home Screen & Save / Load Operations ────────────────
 let activeHomeCategory = '전체';
 
-function renderHomeSheets() {
+async function renderHomeSheets() {
   const grid = q('grid-sheets');
   if (!grid) return;
 
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_spec_sheets');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+  let { data: list, error } = await supabase
+    .from('spec_sheets')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch spec sheets:', error);
+    return;
   }
+
+  // Normalize mapping for compatibility
+  list = list.map(item => ({
+    id: item.id,
+    category: item.category,
+    name: item.name,
+    partno: item.partno,
+    customs: item.customs,
+    productUrl: item.product_url,
+    bgRemovedUrl: item.bg_removed_url,
+    productScale: item.product_scale,
+    productBrightness: item.product_brightness,
+    dimUrl1: item.dim_url1,
+    bgRemovedDimUrl1: item.bg_removed_dim_url1,
+    dimScale1: item.dim_scale1,
+    dimUrl2: item.dim_url2,
+    bgRemovedDimUrl2: item.bg_removed_dim_url2,
+    dimScale2: item.dim_scale2,
+    darkMode: item.dark_mode,
+    dimensions: item.dimensions,
+    dimIdCounter: item.dim_id_counter,
+    createdAt: item.created_at
+  }));
 
   const query = (q('search-input')?.value || '').trim().toLowerCase();
 
@@ -3549,47 +3617,55 @@ function renderHomeSheets() {
   });
 }
 
-function deleteSpecSheet(id) {
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_spec_sheets');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+async function deleteSpecSheet(id) {
+  const { error } = await supabase
+    .from('spec_sheets')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Delete error:', error);
+    alert('삭제에 실패했습니다: ' + error.message);
+    return;
   }
 
-  list = list.filter(item => item.id !== id);
-  localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
   showToast('🗑️ 스펙시트가 삭제되었습니다.');
   renderHomeSheets();
 }
 
-function cloneSpecSheet(id) {
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_spec_sheets');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+async function cloneSpecSheet(id) {
+  const { data: orig, error: fetchErr } = await supabase
+    .from('spec_sheets')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !orig) {
+    console.error('Fetch error for clone:', fetchErr);
+    alert('스펙시트를 불러오는데 실패했습니다.');
+    return;
   }
 
-  const orig = list.find(item => item.id === id);
-  if (!orig) return;
-
   const copy = JSON.parse(JSON.stringify(orig));
-  copy.id = Date.now().toString();
+  copy.id = 'sheet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   copy.name = copy.name + ' - 사본';
-  copy.createdAt = Date.now();
+  copy.created_at = new Date().toISOString();
 
-  const origIdx = list.findIndex(item => item.id === id);
-  list.splice(origIdx + 1, 0, copy);
+  const { error: insertErr } = await supabase
+    .from('spec_sheets')
+    .insert(copy);
 
-  localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
+  if (insertErr) {
+    console.error('Insert clone error:', insertErr);
+    alert('복제에 실패했습니다: ' + insertErr.message);
+    return;
+  }
+
   showToast('📋 스펙시트가 복제되었습니다.');
   renderHomeSheets();
 }
 
-function saveCurrentSpecSheet() {
+async function saveCurrentSpecSheet() {
   const data = gatherForm();
   
   if (!data.name.trim()) {
@@ -3598,51 +3674,69 @@ function saveCurrentSpecSheet() {
     return;
   }
 
-  const specData = {
-    id: state.currentId || Date.now().toString(),
-    category: data.category,
-    name: data.name,
-    partno: data.partno,
-    customs: data.customs,
-    productUrl: state.productUrl,
-    bgRemovedUrl: state.bgRemovedUrl,
-    productScale: state.productScale,
-    productBrightness: state.productBrightness,
-    dimUrl1: state.dimUrl1,
-    bgRemovedDimUrl1: state.bgRemovedDimUrl1,
-    dimScale1: state.dimScale1,
-    dimUrl2: state.dimUrl2,
-    bgRemovedDimUrl2: state.bgRemovedDimUrl2,
-    dimScale2: state.dimScale2,
-    darkMode: state.darkMode,
-    dimensions: JSON.parse(JSON.stringify(dimensions)),
-    dimIdCounter: dimIdCounter,
-    createdAt: Date.now()
-  };
+  const saveBtn = q('btn-save-sheet');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '저장 중...';
+  showToast('⏳ 이미지를 업로드하고 저장 중입니다...');
 
-  let list = [];
   try {
-    const json = localStorage.getItem('zibis_spec_sheets');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
-  }
+    // 1. Upload base64 images to Supabase storage
+    const prodUrl = await uploadImageToSupabase(state.productUrl, 'product.png');
+    const bgRemUrl = await uploadImageToSupabase(state.bgRemovedUrl, 'product_rmbg.png');
+    const dUrl1 = await uploadImageToSupabase(state.dimUrl1, 'dim1.png');
+    const bgRemDim1 = await uploadImageToSupabase(state.bgRemovedDimUrl1, 'dim1_rmbg.png');
+    const dUrl2 = await uploadImageToSupabase(state.dimUrl2, 'dim2.png');
+    const bgRemDim2 = await uploadImageToSupabase(state.bgRemovedDimUrl2, 'dim2_rmbg.png');
 
-  const idx = list.findIndex(item => item.id === specData.id);
-  if (idx > -1) {
-    specData.createdAt = list[idx].createdAt; // Keep original creation date
-    list[idx] = specData;
-  } else {
-    list.unshift(specData);
-  }
+    state.productUrl = prodUrl;
+    state.bgRemovedUrl = bgRemUrl;
+    state.dimUrl1 = dUrl1;
+    state.bgRemovedDimUrl1 = bgRemDim1;
+    state.dimUrl2 = dUrl2;
+    state.bgRemovedDimUrl2 = bgRemDim2;
 
-  localStorage.setItem('zibis_spec_sheets', JSON.stringify(list));
-  state.currentId = specData.id;
-  state.isDirty = false;
-  
-  q('editor-title').textContent = specData.name;
-  showToast('✅ 보관함에 저장되었습니다!');
-  renderHomeSheets();
+    const specId = state.currentId || 'sheet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+    const specData = {
+      id: specId,
+      category: data.category,
+      name: data.name,
+      partno: data.partno,
+      customs: data.customs,
+      product_url: state.productUrl,
+      bg_removed_url: state.bgRemovedUrl,
+      product_scale: state.productScale,
+      product_brightness: state.productBrightness,
+      dim_url1: state.dimUrl1,
+      bg_removed_dim_url1: state.bgRemovedDimUrl1,
+      dim_scale1: state.dimScale1,
+      dim_url2: state.dimUrl2,
+      bg_removed_dim_url2: state.bgRemovedDimUrl2,
+      dim_scale2: state.dimScale2,
+      dark_mode: state.darkMode,
+      dimensions: dimensions,
+      dim_id_counter: dimIdCounter
+    };
+
+    const { error } = await supabase
+      .from('spec_sheets')
+      .upsert(specData);
+
+    if (error) throw error;
+
+    state.currentId = specId;
+    state.isDirty = false;
+    
+    q('editor-title').textContent = specData.name;
+    showToast('✅ 수파베이스 DB 저장 완료!');
+    renderHomeSheets();
+  } catch (err) {
+    console.error('Error saving to Supabase:', err);
+    alert('⚠️ 저장에 실패했습니다: ' + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '저장';
+  }
 }
 
 function getCurrentStateSnapshot() {
@@ -3803,22 +3897,43 @@ async function downloadSpecSheetDirectly(id, format) {
   restoreStateFromSnapshot(snapshot);
 }
 
-function loadSpecSheet(id) {
+async function loadSpecSheet(id) {
   state.isInitializing = true;
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_spec_sheets');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
-  }
+  
+  const { data: item, error } = await supabase
+    .from('spec_sheets')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-  const data = list.find(item => item.id === id);
-  if (!data) {
+  if (error || !item) {
+    console.error('Fetch spec sheet error:', error);
     showToast('⚠️ 데이터를 찾을 수 없습니다.');
     state.isInitializing = false;
     return;
   }
+
+  // Normalize mapping for compatibility
+  const data = {
+    id: item.id,
+    category: item.category,
+    name: item.name,
+    partno: item.partno,
+    customs: item.customs || [],
+    productUrl: item.product_url,
+    bgRemovedUrl: item.bg_removed_url,
+    productScale: item.product_scale,
+    productBrightness: item.product_brightness,
+    dimUrl1: item.dim_url1,
+    bgRemovedDimUrl1: item.bg_removed_dim_url1,
+    dimScale1: item.dim_scale1,
+    dimUrl2: item.dim_url2,
+    bgRemovedDimUrl2: item.bg_removed_dim_url2,
+    dimScale2: item.dim_scale2,
+    darkMode: item.dark_mode,
+    dimensions: item.dimensions || [],
+    dimIdCounter: item.dim_id_counter || 0
+  };
 
   state.currentId = data.id;
   
@@ -3983,18 +4098,30 @@ let requestUploadFileUrls = []; // stores {name, dataUrl}
 let requestSelectedPriority = '보통';
 let activeRequestFilter = '전체';
 
-function renderRawRequests() {
+async function renderRawRequests() {
   const container = q('list-requests');
   if (!container) return;
   
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_raw_requests');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+  let { data: list, error } = await supabase
+    .from('raw_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch raw requests:', error);
+    return;
   }
   
+  // Normalize mapping for compatibility
+  list = list.map(item => ({
+    id: item.id,
+    title: item.title,
+    priority: item.priority,
+    imageUrls: item.image_urls || [],
+    status: item.status,
+    createdAt: item.created_at
+  }));
+
   // Filter by status tab
   let filtered = list;
   if (activeRequestFilter !== '전체') {
@@ -4024,7 +4151,7 @@ function renderRawRequests() {
     const statusLabel = item.status === 'Completed' ? '제작완료' : '대기중';
     const statusClass = item.status === 'Completed' ? 'status-completed' : 'status-pending';
     
-    const allUrls = item.imageUrls || [item.imageUrl].filter(Boolean);
+    const allUrls = item.imageUrls;
     const mainUrl = allUrls[0] || '';
     
     let galleryHtml = '';
@@ -4082,35 +4209,48 @@ function renderRawRequests() {
   });
 }
 
-function toggleRequestStatus(id) {
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_raw_requests');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+async function toggleRequestStatus(id) {
+  const { data: item, error: fetchErr } = await supabase
+    .from('raw_requests')
+    .select('status')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !item) {
+    console.error('Fetch error for toggleStatus:', fetchErr);
+    alert('요청 데이터를 불러오지 못했습니다.');
+    return;
   }
-  
-  const idx = list.findIndex(item => item.id === id);
-  if (idx !== -1) {
-    list[idx].status = list[idx].status === 'Completed' ? 'Pending' : 'Completed';
-    localStorage.setItem('zibis_raw_requests', JSON.stringify(list));
-    renderRawRequests();
-    showToast('상태가 변경되었습니다.');
+
+  const nextStatus = item.status === 'Completed' ? 'Pending' : 'Completed';
+
+  const { error: updateErr } = await supabase
+    .from('raw_requests')
+    .update({ status: nextStatus })
+    .eq('id', id);
+
+  if (updateErr) {
+    console.error('Update status error:', updateErr);
+    alert('상태 업데이트에 실패했습니다.');
+    return;
   }
+
+  renderRawRequests();
+  showToast('상태가 변경되었습니다.');
 }
 
-function deleteRequest(id) {
-  let list = [];
-  try {
-    const json = localStorage.getItem('zibis_raw_requests');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+async function deleteRequest(id) {
+  const { error } = await supabase
+    .from('raw_requests')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Delete request error:', error);
+    alert('요청 삭제에 실패했습니다: ' + error.message);
+    return;
   }
-  
-  list = list.filter(item => item.id !== id);
-  localStorage.setItem('zibis_raw_requests', JSON.stringify(list));
+
   renderRawRequests();
   showToast('요청이 삭제되었습니다.');
 }
@@ -4278,7 +4418,7 @@ reqZone.addEventListener('drop', (e) => {
 });
 
 // Submit request click
-q('btn-submit-request').addEventListener('click', () => {
+q('btn-submit-request').addEventListener('click', async () => {
   const title = q('req-input-title').value.trim();
   if (!title) {
     alert('요청 제목을 입력해주세요.');
@@ -4289,40 +4429,55 @@ q('btn-submit-request').addEventListener('click', () => {
     return;
   }
   
-  let list = [];
+  const submitBtn = q('btn-submit-request');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '등록 중...';
+  showToast('⏳ 이미지를 업로드하고 요청을 등록 중입니다...');
+  
   try {
-    const json = localStorage.getItem('zibis_raw_requests');
-    if (json) list = JSON.parse(json);
-  } catch (e) {
-    console.error(e);
+    // 1. Upload files to storage
+    const uploadedUrls = [];
+    for (let i = 0; i < requestUploadFileUrls.length; i++) {
+      const f = requestUploadFileUrls[i];
+      const url = await uploadImageToSupabase(f.dataUrl, f.name);
+      if (url) uploadedUrls.push(url);
+    }
+    
+    // 2. Insert to Database
+    const reqId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const req = {
+      id: reqId,
+      title: title,
+      priority: requestSelectedPriority,
+      image_urls: uploadedUrls,
+      status: 'Pending'
+    };
+    
+    const { error } = await supabase
+      .from('raw_requests')
+      .insert(req);
+      
+    if (error) throw error;
+    
+    // Reset Form
+    q('req-input-title').value = '';
+    q('fi-request-raw').value = '';
+    requestUploadFileUrls = [];
+    requestSelectedPriority = '보통';
+    q('req-priority-selector').querySelectorAll('.priority-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.priority === '보통');
+    });
+    renderRequestUploadPreviews();
+    
+    renderRawRequests();
+    showToast('✅ 요청이 등록되었습니다.');
+  } catch (err) {
+    console.error('Error submitting raw request:', err);
+    alert('요청 등록에 실패했습니다: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '요청 등록하기';
   }
-  
-  const req = {
-    id: 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-    title: title,
-    priority: requestSelectedPriority,
-    imageUrls: requestUploadFileUrls.map(f => f.dataUrl),
-    status: 'Pending',
-    createdAt: Date.now()
-  };
-  
-  list.unshift(req);
-  localStorage.setItem('zibis_raw_requests', JSON.stringify(list));
-  
-  // Reset Form
-  q('req-input-title').value = '';
-  q('fi-request-raw').value = '';
-  requestUploadFileUrls = [];
-  requestSelectedPriority = '보통';
-  q('req-priority-selector').querySelectorAll('.priority-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.priority === '보통');
-  });
-  renderRequestUploadPreviews();
-  
-  renderRawRequests();
-  showToast('✅ 요청이 등록되었습니다.');
-});
-
 // ── Init ──────────────────────────────────────────────
 renderCounter();
 fetchServerCredits();
