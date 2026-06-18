@@ -1615,6 +1615,9 @@ input[type="file"] { display: none; }
 <div class="home-screen" id="home-screen">
   <div class="home-header">
     <h2>ZIBIS 스펙시트 매니저</h2>
+    <button id="btn-admin-toggle" style="background: transparent; color: #9ca3af; border: 1px solid #374151; font-size: 12px; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s; font-family: inherit;">
+      🔓 관리자 로그인
+    </button>
   </div>
   <div class="home-body">
     <!-- Main Tabs -->
@@ -1780,6 +1783,7 @@ const state = {
   isInitializing:   false,
 };
 
+let isAdmin = localStorage.getItem('zibis_spec_admin') === 'true';
 let customOptions = [];
 
 // Dimension drawing state
@@ -3703,14 +3707,14 @@ async function renderHomeSheets() {
         <div class="sheet-date">${dateStr}</div>
       </div>
       <div class="sheet-actions" style="display:flex; align-items:stretch;">
-        <button class="sheet-btn btn-load" style="flex:1; border:none; padding:10px 4px; font-size:11px;">📂 열기</button>
-        <button class="sheet-btn btn-clone" style="flex:1; border-left:1px solid #f1f5f9; padding:10px 4px; font-size:11px;" title="복제">📋 복제하기</button>
-        <div class="direct-download-group" style="display:flex; align-items:center; padding:0 6px; gap:4px; border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9; background:#f8fafc;">
+        <button class="sheet-btn btn-load" style="flex:1; border:none; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}">📂 열기</button>
+        <button class="sheet-btn btn-clone" style="flex:1; border-left:1px solid #f1f5f9; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}" title="복제">📋 복제하기</button>
+        <div class="direct-download-group" style="display:flex; align-items:center; padding:0 6px; gap:4px; ${isAdmin ? 'border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9;' : 'border-radius:4px; flex:1; justify-content:center;'} background:#f8fafc;">
           <button class="dir-dl-btn" data-fmt="PNG" style="border:none; background:#10b981; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PNG 다운로드">PNG</button>
           <button class="dir-dl-btn" data-fmt="PDF" style="border:none; background:#0284c7; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PDF 다운로드">PDF</button>
           <button class="dir-dl-btn" data-fmt="PPTX" style="border:none; background:#ea580c; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PPTX 다운로드">PPTX</button>
         </div>
-        <button class="sheet-btn btn-delete" style="flex:0 0 44px; padding:10px 4px; font-size:11px;">🗑️</button>
+        <button class="sheet-btn btn-delete" style="flex:0 0 44px; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}">🗑️</button>
       </div>
     `;
 
@@ -4802,10 +4806,72 @@ q('btn-submit-request').addEventListener('click', async () => {
   }
 });
 
+// ── Admin Mode Management ──────────────────────────────
+const SPEC_ADMIN_HASH = "1bd861fd1adca1e527d0a7aae1dff6eb9eed1591781c622f7de4ed00965ae2b9";
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
+function updateAdminUI() {
+  const btnToggle = q('btn-admin-toggle');
+  if (btnToggle) {
+    if (isAdmin) {
+      btnToggle.textContent = '🔒 관리자 로그아웃';
+      btnToggle.style.borderColor = '#ef4444';
+      btnToggle.style.color = '#f87171';
+    } else {
+      btnToggle.textContent = '🔓 관리자 로그인';
+      btnToggle.style.borderColor = '#374151';
+      btnToggle.style.color = '#9ca3af';
+    }
+  }
+
+  const tabRequests = q('tab-btn-requests');
+  if (tabRequests) {
+    tabRequests.style.display = isAdmin ? 'inline-block' : 'none';
+  }
+
+  const btnCreateNew = q('btn-create-new');
+  if (btnCreateNew) {
+    btnCreateNew.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+
+  renderHomeSheets();
+}
+
+q('btn-admin-toggle').addEventListener('click', async () => {
+  if (isAdmin) {
+    if (confirm('관리자 모드에서 로그아웃하시겠습니까?')) {
+      isAdmin = false;
+      localStorage.removeItem('zibis_spec_admin');
+      showToast('🔒 관리자 모드가 해제되었습니다.');
+      updateAdminUI();
+    }
+  } else {
+    const pw = prompt('관리자 비밀번호를 입력하세요:');
+    if (pw) {
+      const hash = await sha256(pw);
+      if (hash === SPEC_ADMIN_HASH) {
+        isAdmin = true;
+        localStorage.setItem('zibis_spec_admin', 'true');
+        showToast('🔓 관리자 인증에 성공했습니다.');
+        updateAdminUI();
+      } else {
+        alert('⚠️ 비밀번호가 일치하지 않습니다.');
+      }
+    }
+  }
+});
+
 // ── Init ──────────────────────────────────────────────
 renderCounter();
 fetchServerCredits();
-renderHomeSheets();
+updateAdminUI();
 renderRawRequests();
 q('home-screen').style.display = 'flex';
 
