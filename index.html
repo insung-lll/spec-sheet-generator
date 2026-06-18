@@ -2424,6 +2424,29 @@ q('btn-select-tool').addEventListener('click', () => {
 let isShiftPressed = false;
 let currentMouseCoords = null;
 
+// Dragging dimensions state
+let isDraggingDim = false;
+let dragDimObj = null;
+let dragStartCoords = null; // { x, y } in SVG space
+let dragStartPoints = null; // { x1, y1, x2, y2 }
+
+function getSVGCoords(e) {
+  const rect = q('spec-preview').getBoundingClientRect();
+  let x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
+  let y = Math.round((e.clientY - rect.top)  * 700  / rect.height);
+  return { x, y };
+}
+
+window.addEventListener('mouseup', () => {
+  if (isDraggingDim) {
+    isDraggingDim = false;
+    dragDimObj = null;
+    dragStartCoords = null;
+    dragStartPoints = null;
+    updatePreview();
+  }
+});
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Shift') {
     isShiftPressed = true;
@@ -2453,12 +2476,36 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// SVG mousemove → track cursor for live preview
+// SVG mousemove → track cursor for live preview / handles dragging
 dimSvg.addEventListener('mousemove', e => {
+  if (isDraggingDim && dragDimObj && dragStartCoords && dragStartPoints) {
+    const coords = getSVGCoords(e);
+    let dx = coords.x - dragStartCoords.x;
+    let dy = coords.y - dragStartCoords.y;
+
+    const minX = Math.min(dragStartPoints.x1, dragStartPoints.x2);
+    const maxX = Math.max(dragStartPoints.x1, dragStartPoints.x2);
+    const minY = Math.min(dragStartPoints.y1, dragStartPoints.y2);
+    const maxY = Math.max(dragStartPoints.y1, dragStartPoints.y2);
+
+    if (minX + dx < 0) dx = -minX;
+    if (maxX + dx > 500) dx = 500 - maxX;
+    if (minY + dy < 384) dy = 384 - minY;
+    if (maxY + dy > 700) dy = 700 - maxY;
+
+    dragDimObj.x1 = dragStartPoints.x1 + dx;
+    dragDimObj.y1 = dragStartPoints.y1 + dy;
+    dragDimObj.x2 = dragStartPoints.x2 + dx;
+    dragDimObj.y2 = dragStartPoints.y2 + dy;
+
+    renderDimOverlay();
+    return;
+  }
+
   if (!dimToolActive || !pendingPoint) return;
-  const rect = q('spec-preview').getBoundingClientRect();
-  let x = Math.round((e.clientX - rect.left) * 1000 / rect.width);
-  let y = Math.round((e.clientY - rect.top)  * 700  / rect.height);
+  const coords = getSVGCoords(e);
+  let x = coords.x;
+  let y = coords.y;
   
   // Clamp to dimension image area (x: 0~500, y: 384~700)
   if (x < 0) x = 0;
@@ -2629,7 +2676,22 @@ function renderDimOverlay() {
     const currentStrokeWidth = isSelected ? '3.5' : '2';
 
     const g = document.createElementNS(ns, 'g');
-    g.style.cursor = selectToolActive ? 'pointer' : 'default';
+    g.style.cursor = selectToolActive ? 'move' : 'default';
+
+    g.addEventListener('mousedown', e => {
+      if (selectToolActive) {
+        e.stopPropagation();
+        selectedDimId = dim.id;
+        renderDimOverlay();
+        
+        isDraggingDim = true;
+        dragDimObj = dim;
+        const coords = getSVGCoords(e);
+        dragStartCoords = coords;
+        dragStartPoints = { x1: dim.x1, y1: dim.y1, x2: dim.x2, y2: dim.y2 };
+      }
+    });
+
     g.addEventListener('click', e => {
       if (selectToolActive) {
         e.stopPropagation();
@@ -2688,6 +2750,36 @@ function renderDimOverlay() {
 
       const labelG = document.createElementNS(ns, 'g');
       labelG.setAttribute('transform', `translate(${mx}, ${my}) rotate(${angleDeg})`);
+
+      let clickStartX = 0;
+      let clickStartY = 0;
+
+      labelG.addEventListener('mousedown', e => {
+        if (selectToolActive) {
+          e.stopPropagation();
+          selectedDimId = dim.id;
+          renderDimOverlay();
+          
+          isDraggingDim = true;
+          dragDimObj = dim;
+          const coords = getSVGCoords(e);
+          dragStartCoords = coords;
+          dragStartPoints = { x1: dim.x1, y1: dim.y1, x2: dim.x2, y2: dim.y2 };
+          
+          clickStartX = e.clientX;
+          clickStartY = e.clientY;
+        }
+      });
+
+      labelG.addEventListener('click', e => {
+        if (selectToolActive) {
+          e.stopPropagation();
+          const moveDist = Math.sqrt(Math.pow(e.clientX - clickStartX, 2) + Math.pow(e.clientY - clickStartY, 2));
+          if (moveDist < 4) {
+            showDimLabelInput(dim);
+          }
+        }
+      });
 
       const bgRect = document.createElementNS(ns, 'rect');
       bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', 2);
