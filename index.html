@@ -2899,6 +2899,16 @@ function renderCustomOptions() {
     const row = document.createElement('div');
     row.className = 'custom-opt-row';
     row.innerHTML = `
+      <div class="drag-handle" style="cursor: grab; display: flex; align-items: center; justify-content: center; width: 18px; height: 32px; color: #9ca3af; user-select: none; align-self: center;">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+          <circle cx="8" cy="6" r="2" />
+          <circle cx="16" cy="6" r="2" />
+          <circle cx="8" cy="12" r="2" />
+          <circle cx="16" cy="12" r="2" />
+          <circle cx="8" cy="18" r="2" />
+          <circle cx="16" cy="18" r="2" />
+        </svg>
+      </div>
       <input class="key-input" type="text" placeholder="타이틀" value="${esc(opt.key)}">
       <div class="val-wrap">
         <input class="val-input" type="text" placeholder="내용" value="${esc(opt.val)}">
@@ -2910,6 +2920,38 @@ function renderCustomOptions() {
       </div>
       <button class="btn-remove-opt" title="삭제">×</button>
     `;
+
+    // Drag and drop setup (only draggable when holding the drag handle)
+    const dragHandle = row.querySelector('.drag-handle');
+    dragHandle.addEventListener('mousedown', () => {
+      row.draggable = true;
+    });
+    dragHandle.addEventListener('mouseup', () => {
+      row.draggable = false;
+    });
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', i);
+      row.style.opacity = '0.4';
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = i;
+      if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+        const temp = customOptions.splice(fromIdx, 1)[0];
+        customOptions.splice(toIdx, 0, temp);
+        renderCustomOptions();
+        updatePreview();
+      }
+    });
+    row.addEventListener('dragend', () => {
+      row.draggable = false;
+      row.style.opacity = '1';
+    });
+
     const keyInp = row.querySelector('.key-input');
     const valInp = row.querySelector('.val-input');
     const chips  = row.querySelector('.size-chips');
