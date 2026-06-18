@@ -2429,6 +2429,8 @@ let isDraggingDim = false;
 let dragDimObj = null;
 let dragStartCoords = null; // { x, y } in SVG space
 let dragStartPoints = null; // { x1, y1, x2, y2 }
+let dragStartClientX = 0;
+let dragStartClientY = 0;
 
 function getSVGCoords(e) {
   const rect = q('spec-preview').getBoundingClientRect();
@@ -2437,13 +2439,36 @@ function getSVGCoords(e) {
   return { x, y };
 }
 
-window.addEventListener('mouseup', () => {
+window.addEventListener('mouseup', (e) => {
   if (isDraggingDim) {
     isDraggingDim = false;
+    const dragObj = dragDimObj;
     dragDimObj = null;
     dragStartCoords = null;
     dragStartPoints = null;
-    updatePreview();
+
+    // Determine if it was a selection click (moved <= 3px in screen pixels)
+    const moveDist = Math.sqrt(Math.pow(e.clientX - dragStartClientX, 2) + Math.pow(e.clientY - dragStartClientY, 2));
+    if (moveDist <= 3) {
+      selectedDimId = dragObj.id;
+      renderDimOverlay();
+
+      // Check if clicked the label group (class 'dim-label-group')
+      let target = e.target;
+      let clickedLabel = false;
+      while (target && target !== dimSvg) {
+        if (target.classList && target.classList.contains('dim-label-group')) {
+          clickedLabel = true;
+          break;
+        }
+        target = target.parentNode;
+      }
+      if (clickedLabel) {
+        showDimLabelInput(dragObj);
+      }
+    } else {
+      updatePreview();
+    }
   }
 });
 
@@ -2681,22 +2706,13 @@ function renderDimOverlay() {
     g.addEventListener('mousedown', e => {
       if (selectToolActive) {
         e.stopPropagation();
-        selectedDimId = dim.id;
-        renderDimOverlay();
-        
         isDraggingDim = true;
         dragDimObj = dim;
         const coords = getSVGCoords(e);
         dragStartCoords = coords;
         dragStartPoints = { x1: dim.x1, y1: dim.y1, x2: dim.x2, y2: dim.y2 };
-      }
-    });
-
-    g.addEventListener('click', e => {
-      if (selectToolActive) {
-        e.stopPropagation();
-        selectedDimId = dim.id;
-        renderDimOverlay();
+        dragStartClientX = e.clientX;
+        dragStartClientY = e.clientY;
       }
     });
 
@@ -2750,36 +2766,7 @@ function renderDimOverlay() {
 
       const labelG = document.createElementNS(ns, 'g');
       labelG.setAttribute('transform', `translate(${mx}, ${my}) rotate(${angleDeg})`);
-
-      let clickStartX = 0;
-      let clickStartY = 0;
-
-      labelG.addEventListener('mousedown', e => {
-        if (selectToolActive) {
-          e.stopPropagation();
-          selectedDimId = dim.id;
-          renderDimOverlay();
-          
-          isDraggingDim = true;
-          dragDimObj = dim;
-          const coords = getSVGCoords(e);
-          dragStartCoords = coords;
-          dragStartPoints = { x1: dim.x1, y1: dim.y1, x2: dim.x2, y2: dim.y2 };
-          
-          clickStartX = e.clientX;
-          clickStartY = e.clientY;
-        }
-      });
-
-      labelG.addEventListener('click', e => {
-        if (selectToolActive) {
-          e.stopPropagation();
-          const moveDist = Math.sqrt(Math.pow(e.clientX - clickStartX, 2) + Math.pow(e.clientY - clickStartY, 2));
-          if (moveDist < 4) {
-            showDimLabelInput(dim);
-          }
-        }
-      });
+      labelG.setAttribute('class', 'dim-label-group');
 
       const bgRect = document.createElementNS(ns, 'rect');
       bgRect.setAttribute('x', -labelW / 2); bgRect.setAttribute('y', 2);
