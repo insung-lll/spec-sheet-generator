@@ -1344,6 +1344,25 @@ input[type="file"] { display: none; }
   height: 100%;
   object-fit: contain;
 }
+.file-icon-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+}
+.file-icon-preview.pdf {
+  background: #ef4444;
+}
+.file-icon-preview.excel {
+  background: #10b981;
+}
+.file-icon-preview.file {
+  background: #6b7280;
+}
 .req-preview-thumb-remove {
   position: absolute;
   top: 2px;
@@ -1662,12 +1681,12 @@ input[type="file"] { display: none; }
           </div>
           
           <div class="request-form-group">
-            <label>도면 / 제품 파일 (JPG, PNG · 최대 3장) *</label>
+            <label>도면 / 제품 파일 (JPG, PNG, PDF, Excel · 최대 10개) *</label>
             <div class="request-upload-zone" id="req-upload-zone">
               <span class="icon">📁</span>
-              <span id="req-upload-text">파일을 드래그하거나 클릭하여 업로드 (최대 3장)</span>
+              <span id="req-upload-text">파일을 드래그하거나 클릭하여 업로드 (최대 10개)</span>
             </div>
-            <input type="file" id="fi-request-raw" accept="image/png, image/jpeg, image/jpg" style="display:none;" multiple>
+            <input type="file" id="fi-request-raw" accept="image/png, image/jpeg, image/jpg, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none;" multiple>
             <div id="req-upload-previews-container" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
           </div>
           
@@ -4279,12 +4298,29 @@ async function renderRawRequests() {
     const allUrls = item.imageUrls;
     const mainUrl = allUrls[0] || '';
     
+    function getFilePreviewHtml(url, title = '', isMini = false) {
+      if (!url) return '';
+      const cleanUrl = url.split('?')[0].toLowerCase();
+      const isPdf = cleanUrl.endsWith('.pdf') || url.startsWith('data:application/pdf');
+      const isExcel = cleanUrl.endsWith('.xlsx') || cleanUrl.endsWith('.xls') || 
+                      url.startsWith('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') ||
+                      url.startsWith('data:application/vnd.ms-excel');
+      
+      if (isPdf) {
+        return `<div class="file-icon-preview pdf" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:${isMini ? '8px' : '12px'}; font-weight:800; color:white; background:#ef4444;">PDF</div>`;
+      }
+      if (isExcel) {
+        return `<div class="file-icon-preview excel" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:${isMini ? '8px' : '11px'}; font-weight:800; color:white; background:#10b981;">XLSX</div>`;
+      }
+      return `<img src="${url}" alt="${esc(title)}" style="width:100%; height:100%; object-fit:contain;">`;
+    }
+    
     let galleryHtml = '';
     if (allUrls.length > 1) {
       galleryHtml = `<div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">` + 
         allUrls.map((url, i) => `
           <div style="width:28px; height:28px; border-radius:4px; border:1px solid #e2e8f0; overflow:hidden; background:#f8fafc;" title="도면 ${i + 1}">
-            <img src="${url}" style="width:100%; height:100%; object-fit:contain;">
+            ${getFilePreviewHtml(url, '', true)}
           </div>
         `).join('') +
       `</div>`;
@@ -4292,7 +4328,7 @@ async function renderRawRequests() {
     
     itemEl.innerHTML = `
       <div class="request-item-thumb">
-        <img src="${mainUrl}" alt="${esc(item.title)}">
+        ${getFilePreviewHtml(mainUrl, item.title, false)}
       </div>
       <div class="request-item-info">
         <div class="request-item-title" title="${esc(item.title)}">${esc(item.title)}</div>
@@ -4408,43 +4444,83 @@ async function deleteRequest(id) {
   showToast('요청이 삭제되었습니다.');
 }
 
-function downloadRawRequestFiles(title, imageUrls) {
-  imageUrls.forEach((dataUrl, idx) => {
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    
-    let ext = 'png';
-    if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) {
-      ext = 'jpg';
+async function downloadRawRequestFiles(title, imageUrls) {
+  for (let idx = 0; idx < imageUrls.length; idx++) {
+    const dataUrl = imageUrls[idx];
+    try {
+      let ext = 'png';
+      if (dataUrl.startsWith('data:')) {
+        if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) {
+          ext = 'jpg';
+        } else if (dataUrl.startsWith('data:application/pdf')) {
+          ext = 'pdf';
+        } else if (dataUrl.startsWith('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+          ext = 'xlsx';
+        } else if (dataUrl.startsWith('data:application/vnd.ms-excel')) {
+          ext = 'xls';
+        }
+        
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `${title.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_raw_${idx + 1}.${ext}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Remote URL (from Supabase Storage)
+        const cleanUrl = dataUrl.split('?')[0];
+        const match = cleanUrl.match(/\.([a-zA-Z0-9]+)$/);
+        if (match) {
+          ext = match[1].toLowerCase();
+        }
+        
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${title.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_raw_${idx + 1}.${ext}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      window.open(dataUrl, '_blank');
     }
-    
-    link.download = `${title.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_raw_${idx + 1}.${ext}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+  }
 }
 
 function handleRequestFiles(files) {
   if (!files || files.length === 0) return;
   const filesArr = Array.from(files);
   
-  if (requestUploadFileUrls.length + filesArr.length > 3) {
-    alert('⚠️ 이미지 파일은 최대 3장까지만 등록할 수 있습니다.');
+  if (requestUploadFileUrls.length + filesArr.length > 10) {
+    alert('⚠️ 도면/제품 파일은 최대 10개까지만 등록할 수 있습니다.');
     return;
   }
   
   let loadedCount = 0;
   filesArr.forEach(file => {
-    if (!file.type.startsWith('image/')) {
-      showToast('⚠️ 이미지 파일(PNG, JPG, JPEG)만 업로드할 수 있습니다.');
+    const ext = file.name.split('.').pop().toLowerCase();
+    const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf', 'xlsx', 'xls'];
+    if (!allowedExtensions.includes(ext)) {
+      showToast('⚠️ 지원하지 않는 파일 형식입니다. (PNG, JPG, JPEG, PDF, Excel만 지원)');
+      loadedCount++;
+      if (loadedCount === filesArr.length) {
+        renderRequestUploadPreviews();
+      }
       return;
     }
+    
     const reader = new FileReader();
     reader.onload = (e) => {
       requestUploadFileUrls.push({
         name: file.name,
-        dataUrl: e.target.result
+        dataUrl: e.target.result,
+        type: file.type || ''
       });
       loadedCount++;
       if (loadedCount === filesArr.length) {
@@ -4469,8 +4545,22 @@ function renderRequestUploadPreviews() {
   requestUploadFileUrls.forEach((fileObj, idx) => {
     const thumbWrapper = document.createElement('div');
     thumbWrapper.className = 'req-preview-thumb-wrapper';
+    
+    const isImage = fileObj.type.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(fileObj.name);
+    
+    let contentHtml = '';
+    if (isImage) {
+      contentHtml = `<img src="${fileObj.dataUrl}" alt="${esc(fileObj.name)}">`;
+    } else if (/\.(pdf)$/i.test(fileObj.name)) {
+      contentHtml = `<div class="file-icon-preview pdf">PDF</div>`;
+    } else if (/\.(xlsx|xls)$/i.test(fileObj.name)) {
+      contentHtml = `<div class="file-icon-preview excel">XLSX</div>`;
+    } else {
+      contentHtml = `<div class="file-icon-preview file">FILE</div>`;
+    }
+    
     thumbWrapper.innerHTML = `
-      <img src="${fileObj.dataUrl}" alt="${esc(fileObj.name)}">
+      ${contentHtml}
       <button type="button" class="req-preview-thumb-remove" data-idx="${idx}">&times;</button>
     `;
     
