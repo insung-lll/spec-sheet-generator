@@ -3823,10 +3823,11 @@ async function renderHomeSheets() {
       <div class="sheet-actions" style="display:flex; align-items:stretch;">
         <button class="sheet-btn btn-load" style="flex:1; border:none; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}">📂 열기</button>
         <button class="sheet-btn btn-clone" style="flex:1; border-left:1px solid #f1f5f9; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}" title="복제">📋 복제하기</button>
-        <div class="direct-download-group" style="display:flex; align-items:center; ${isAdmin ? 'padding:0 6px; gap:4px; border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9;' : 'padding: 10px 0 12px 16px; gap: 4px; border-radius: 4px; flex: 1; justify-content: left;'} background:#f8fafc;">
-          <button class="dir-dl-btn" data-fmt="PNG" style="border:none; background:#10b981; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PNG 다운로드">PNG</button>
-          <button class="dir-dl-btn" data-fmt="PDF" style="border:none; background:#0284c7; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PDF 다운로드">PDF</button>
-          <button class="dir-dl-btn" data-fmt="PPTX" style="border:none; background:#ea580c; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="PPTX 다운로드">PPTX</button>
+        <div class="direct-download-group" style="display:flex; align-items:center; ${isAdmin ? 'padding:0 6px; gap:3px; border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9;' : 'padding: 10px 0 12px 16px; gap: 4px; border-radius: 4px; flex: 1; justify-content: left;'} background:#f8fafc;">
+          <button class="dir-dl-btn" data-fmt="PNG" style="border:none; background:#10b981; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="스펙시트 PNG 다운로드">PNG</button>
+          <button class="dir-dl-btn" data-fmt="PDF" style="border:none; background:#0284c7; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="스펙시트 PDF 다운로드">PDF</button>
+          <button class="dir-dl-btn" data-fmt="PPTX" style="border:none; background:#ea580c; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="스펙시트 PPTX 다운로드">PPTX</button>
+          <button class="dir-img-dl-btn" style="border:none; background:#6b7280; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="원본 제품 이미지 다운로드">이미지</button>
         </div>
         <button class="sheet-btn btn-delete" style="flex:0 0 44px; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}">🗑️</button>
       </div>
@@ -3843,6 +3844,10 @@ async function renderHomeSheets() {
         e.stopPropagation();
         downloadSpecSheetDirectly(item.id, btn.dataset.fmt);
       });
+    });
+    card.querySelector('.dir-img-dl-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadMainProductImage(item.name, item.productUrl);
     });
     card.querySelector('.btn-delete').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -4644,6 +4649,46 @@ async function deleteRequest(id) {
 
   renderRawRequests();
   showToast('요청이 삭제되었습니다.');
+}
+
+async function downloadMainProductImage(name, url) {
+  if (!url) {
+    showToast('⚠️ 등록된 메인 이미지가 없습니다.');
+    return;
+  }
+  showToast('⏳ 이미지를 다운로드 중입니다...');
+  try {
+    let ext = 'png';
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    const match = cleanUrl.match(/\.([a-zA-Z0-9]+)$/);
+    if (match) {
+      ext = match[1];
+    }
+    
+    let blobUrl;
+    if (url.startsWith('data:')) {
+      blobUrl = url;
+    } else {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      blobUrl = URL.createObjectURL(blob);
+    }
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `${name.replace(/[^a-zA-Z0-9가-힣\s-_]/g, '')}_main.${ext}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    if (!url.startsWith('data:')) {
+      URL.revokeObjectURL(blobUrl);
+    }
+    showToast('✅ 이미지 다운로드 완료');
+  } catch (err) {
+    console.error('Failed to download image:', err);
+    window.open(url, '_blank');
+  }
 }
 
 async function downloadRawRequestFiles(title, imageUrls) {
