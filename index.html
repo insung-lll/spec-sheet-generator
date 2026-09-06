@@ -733,24 +733,69 @@ input[type="file"] { display: none; }
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #f8fafc;
+  background: linear-gradient(to bottom, #E9EEF2 0%, #FFFFFF 90%);
   z-index: 100;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
+.home-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to right, #FFF 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(to bottom, #FFF 0 1px, transparent 1px 18px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.55) 45%, transparent 88%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.55) 45%, transparent 88%);
+}
 .home-header {
-  background: #111827;
-  padding: 16px 32px;
+  background: transparent;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  color: white;
+  color: #111827;
 }
-.home-header h2 {
-  font-size: 18px;
-  font-weight: 700;
+.home-header .home-logo {
+  display: block;
+  height: 50px;
+  width: auto;
+}
+.home-header #btn-admin-toggle {
+  margin: 0 20px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid #000000;
+  border-radius: 50px;
+  background: transparent;
+  color: #3f3f3f;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'Noto Sans KR', inherit;
+  line-height: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.home-header #btn-admin-toggle:hover {
+  background: #e9e9e9;
+}
+.home-header #btn-admin-toggle .admin-lock {
+  width: 10px;
+  height: 13px;
+  display: block;
+}
+.home-header #btn-admin-toggle.is-admin {
+  background: #e9e9e9;
+}
+.home-header #btn-admin-toggle.is-admin:hover {
+  background: transparent;
 }
 .home-body {
   flex: 1;
@@ -775,73 +820,86 @@ input[type="file"] { display: none; }
   margin-bottom: 24px;
 }
 .btn-create-new {
-  background: #10b981;
+  background: #2563eb;
   color: white;
-  font-weight: 700;
-  padding: 12px 28px;
+  font-weight: 600;
+  padding: 14px 28px;
   border-radius: 8px;
   border: none;
-  font-size: 15px;
+  font-size: 18px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 11px;
 }
 .btn-create-new:hover {
-  background: #059669;
+  background: #1852d4;
+  color: #d5dff4;
   transform: translateY(-1px);
 }
 
+.home-searchbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
 .home-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 24px;
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 16px;
 }
 .home-categories {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
-  overflow-x: auto;
   padding-bottom: 4px;
 }
 .home-cat-tab {
-  padding: 8px 16px;
+  height: 36px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #64748b;
-  font-weight: 600;
+  border: none;
+  background: #fafafa;
+  color: #333333;
+  font-weight: 500;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
 }
 .home-cat-tab:hover {
-  background: #f1f5f9;
+  background: #e7e7e7;
 }
 .home-cat-tab.active {
-  background: #1e293b;
-  color: white;
-  border-color: #1e293b;
+  background: #000000;
+  color: #ffffff;
+  font-weight: 700;
 }
 .home-search {
   position: relative;
-  width: 280px;
-  margin-left: auto;
+  width: 240px;
 }
 .home-search input {
   width: 100%;
   padding: 8px 12px 8px 36px;
   border-radius: 8px;
-  border: 1.5px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   font-size: 13px;
   outline: none;
+}
+.home-search input::placeholder {
+  color: #bababa;
 }
 .home-search::before {
   content: "🔍";
@@ -886,6 +944,13 @@ input[type="file"] { display: none; }
   max-width: 80%;
   max-height: 80%;
   object-fit: contain;
+  transition: transform 0.25s ease;
+}
+.sheet-thumbnail.clickable {
+  cursor: pointer;
+}
+.sheet-thumbnail.clickable:hover img {
+  transform: scale(1.1);
 }
 .sheet-thumbnail .placeholder-thumb {
   font-size: 40px;
@@ -929,41 +994,49 @@ input[type="file"] { display: none; }
 }
 .sheet-actions {
   display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
   border-top: 1px solid #f1f5f9;
-  background: #f8fafc;
+  background: #ffffff;
 }
-.sheet-btn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: transparent;
-  font-size: 12px;
-  font-weight: 700;
+.card-fmt, .card-dup {
+  height: 25px;
+  padding: 0 10px;
+  border: 1px solid #d5d5d5;
+  background: #fdfdfd;
+  color: #353535;
+  font-size: 10px;
+  font-family: Arial, 'Noto Sans KR', sans-serif;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
 }
-.sheet-btn.btn-load {
-  color: #2563eb;
+.card-fmt:hover, .card-dup:hover {
+  background: #f0f0f0;
+  border-color: #b8b8b8;
 }
-.sheet-btn.btn-load:hover {
-  background: #eff6ff;
+.card-dup .dup-icon {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
-.sheet-btn.btn-clone {
-  color: #475569;
+.card-trash {
+  margin-left: auto;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: transparent url('icons/icon-trash.svg') center / contain no-repeat;
 }
-.sheet-btn.btn-clone:hover {
-  background: #f1f5f9;
-}
-.sheet-btn.btn-delete {
-  color: #ef4444;
-  border-left: 1px solid #f1f5f9;
-}
-.sheet-btn.btn-delete:hover {
-  background: #fef2f2;
+.card-trash:hover {
+  background-image: url('icons/icon-trash-hover.svg');
 }
 
 .empty-state {
@@ -996,10 +1069,10 @@ input[type="file"] { display: none; }
   border: none;
   border-bottom: 3px solid transparent;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
   padding: 12px 8px;
   cursor: pointer;
-  color: #64748b;
+  color: #a5a5a5;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -1010,6 +1083,7 @@ input[type="file"] { display: none; }
 }
 .main-tab-btn.active {
   color: #2563eb;
+  font-weight: 700;
   border-bottom-color: #2563eb;
 }
 
@@ -1675,22 +1749,28 @@ input:checked + .slider:before {
 <!-- ===== HOME SCREEN ===== -->
 <div class="home-screen" id="home-screen">
   <div class="home-header">
-    <h2>ZIBIS 스펙시트 매니저</h2>
-    <button id="btn-admin-toggle" style="background: transparent; color: #9ca3af; border: 1px solid #374151; font-size: 12px; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s; font-family: inherit;">
-      🔓 관리자 로그인
+    <img class="home-logo" src="icons/logo_3.svg" alt="ZIBIS">
+    <button id="btn-admin-toggle">
+      <img class="admin-lock" src="icons/icon-lock.svg" alt="">
+      <span id="admin-toggle-label">관리자 로그인</span>
     </button>
   </div>
   <div class="home-body">
     <!-- Main Tabs -->
     <div class="home-main-tabs">
-      <button class="main-tab-btn active" id="tab-btn-cabinet" data-tab="cabinet">📂 스펙시트 보관함</button>
-      <button class="main-tab-btn" id="tab-btn-requests" data-tab="requests">📥 로우데이터 요청함</button>
+      <button class="main-tab-btn active" id="tab-btn-cabinet" data-tab="cabinet">보관함</button>
+      <button class="main-tab-btn" id="tab-btn-requests" data-tab="requests">제작요청</button>
     </div>
 
     <!-- Panel 1: Cabinet -->
     <div id="panel-cabinet">
+      <div class="home-searchbar">
+        <div class="home-search">
+          <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
+        </div>
+      </div>
       <div class="home-hero">
-        <h1>스펙시트 보관함</h1>
+        <h1>보관함</h1>
         <p>작성된 스펙시트를 불러오거나 카테고리별로 모아서 관리할 수 있습니다.</p>
         <button class="btn-create-new" id="btn-create-new">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
@@ -1711,9 +1791,6 @@ input:checked + .slider:before {
           <button class="home-cat-tab" data-cat="LINEAR LIGHT">LINEAR LIGHT</button>
           <button class="home-cat-tab" data-cat="WALL LIGHT">WALL LIGHT</button>
           <button class="home-cat-tab" data-cat="CEILING LIGHT">CEILING LIGHT</button>
-        </div>
-        <div class="home-search">
-          <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
         </div>
       </div>
 
@@ -3111,7 +3188,7 @@ function buildSpec(container, d) {
   container.insertAdjacentHTML('beforeend', `
     <div class="sc-header">
       <div class="sc-category">${esc(d.category)}</div>
-      <img class="sc-logo" src="zibis_logo.png" alt="Zibis Logo" style="height: 36px; object-fit: contain; margin-bottom: -6px; position: relative; left: -4px;">
+      <img class="sc-logo" src="icons/zibis_logo.png" alt="Zibis Logo" style="height: 36px; object-fit: contain; margin-bottom: -6px; position: relative; left: -4px;">
     </div>
   `);
 
@@ -3493,10 +3570,10 @@ async function downloadAsPPTX(silent = false) {
     });
 
     // Logo image
-    const logoSize = await getImageSize('zibis_logo.png');
+    const logoSize = await getImageSize('icons/zibis_logo.png');
     const logoFit = calculateFitSize(logoSize.w, logoSize.h, 1.2, 0.36);
     slide.addImage({
-      path: 'zibis_logo.png',
+      path: 'icons/zibis_logo.png',
       x: 9.64 - logoFit.w,
       y: 0.22 + (0.36 - logoFit.h) / 2,
       w: logoFit.w,
@@ -3840,7 +3917,7 @@ async function renderHomeSheets() {
       : '';
 
     card.innerHTML = `
-      <div class="sheet-thumbnail" style="position: relative;">
+      <div class="sheet-thumbnail ${isAdmin ? 'clickable' : ''}" style="position: relative;" ${isAdmin ? `title="열기"` : ''}>
         <span class="sheet-cat-badge">${esc(item.category)}</span>
         ${draftThumbBadge}
         ${thumbHtml}
@@ -3850,21 +3927,21 @@ async function renderHomeSheets() {
         <div class="sheet-partno">${esc(item.partno || '-')}</div>
         <div class="sheet-date">${dateStr}</div>
       </div>
-      <div class="sheet-actions" style="display:flex; align-items:stretch;">
-        <button class="sheet-btn btn-load" style="flex:1; border:none; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}">📂 열기</button>
-        <button class="sheet-btn btn-clone" style="flex:1; border-left:1px solid #f1f5f9; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}" title="복제">📋 복제하기</button>
-        <div class="direct-download-group" style="display:flex; align-items:center; ${isAdmin ? 'padding:0 6px; gap:3px; border-left:1px solid #f1f5f9; border-right:1px solid #f1f5f9;' : 'padding: 10px 0 12px 16px; gap: 4px; border-radius: 4px; flex: 1; justify-content: left;'} background:#f8fafc;">
-          <button class="dir-dl-btn" data-fmt="PNG" style="border:none; background:#10b981; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="스펙시트 PNG 다운로드">PNG</button>
-          <button class="dir-dl-btn" data-fmt="PDF" style="border:none; background:#0284c7; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="스펙시트 PDF 다운로드">PDF</button>
-          <button class="dir-dl-btn" data-fmt="PPTX" style="border:none; background:#ea580c; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="스펙시트 PPTX 다운로드">PPTX</button>
-          <button class="dir-img-dl-btn" style="border:none; background:#6b7280; color:white; font-size:9px; font-weight:800; border-radius:4px; padding:3px 6px; cursor:pointer;" title="원본 제품 이미지 다운로드">이미지</button>
-        </div>
-        <button class="sheet-btn btn-delete" style="flex:0 0 44px; padding:10px 4px; font-size:11px; ${isAdmin ? '' : 'display:none;'}">🗑️</button>
+      <div class="sheet-actions">
+        <button class="card-dup btn-clone" title="복제하기" ${isAdmin ? '' : 'style="display:none;"'}><img class="dup-icon" src="icons/icon-copy.svg" alt="">Duplicate</button>
+        <button class="card-fmt dir-dl-btn" data-fmt="PNG" title="스펙시트 PNG 다운로드">PNG</button>
+        <button class="card-fmt dir-dl-btn" data-fmt="PDF" title="스펙시트 PDF 다운로드">PDF</button>
+        <button class="card-fmt dir-dl-btn" data-fmt="PPTX" title="스펙시트 PPTX 다운로드">PPTX</button>
+        <button class="card-fmt dir-img-dl-btn" title="원본 제품 이미지 다운로드">이미지</button>
+        <button class="card-trash btn-delete" title="삭제" ${isAdmin ? '' : 'style="display:none;"'}></button>
       </div>
     `;
 
-    // Bind load, clone, and delete events
-    card.querySelector('.btn-load').addEventListener('click', () => loadSpecSheet(item.id));
+    // Bind open (via thumbnail click), clone, and delete events
+    if (isAdmin) {
+      const thumb = card.querySelector('.sheet-thumbnail');
+      if (thumb) thumb.addEventListener('click', () => loadSpecSheet(item.id));
+    }
     card.querySelector('.btn-clone').addEventListener('click', (e) => {
       e.stopPropagation();
       cloneSpecSheet(item.id);
@@ -3965,15 +4042,23 @@ async function deleteSpecSheet(id) {
     console.error('Failed to remove images from Storage:', err);
   }
 
-  // 2. Delete row from DB
-  const { error } = await supabase
+  // 2. Delete row from DB. .select() returns the deleted rows, so we can tell a
+  //    real delete apart from an RLS-blocked no-op (which returns no error but
+  //    deletes 0 rows and would otherwise look like success).
+  const { data: deleted, error } = await supabase
     .from('spec_sheets')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select();
 
   if (error) {
     console.error('Delete error:', error);
     alert('삭제에 실패했습니다: ' + error.message);
+    return;
+  }
+
+  if (!deleted || deleted.length === 0) {
+    alert('삭제되지 않았습니다. DB 삭제 권한(RLS DELETE 정책)이 없어 차단된 것으로 보입니다. Supabase에서 spec_sheets 테이블의 DELETE 정책을 확인해 주세요.');
     return;
   }
 
@@ -5014,15 +5099,9 @@ async function sha256(message) {
 function updateAdminUI() {
   const btnToggle = q('btn-admin-toggle');
   if (btnToggle) {
-    if (isAdmin) {
-      btnToggle.textContent = '🔒 관리자 로그아웃';
-      btnToggle.style.borderColor = '#ef4444';
-      btnToggle.style.color = '#f87171';
-    } else {
-      btnToggle.textContent = '🔓 관리자 로그인';
-      btnToggle.style.borderColor = '#374151';
-      btnToggle.style.color = '#9ca3af';
-    }
+    const lbl = q('admin-toggle-label');
+    if (lbl) lbl.textContent = isAdmin ? '관리자 로그아웃' : '관리자 로그인';
+    btnToggle.classList.toggle('is-admin', isAdmin);
   }
 
   const tabRequests = q('tab-btn-requests');
