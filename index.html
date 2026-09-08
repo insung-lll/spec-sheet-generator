@@ -475,7 +475,7 @@ input[type="file"] { display: none; }
 .btn-pdf:hover { background: #b91c1c; }
 .btn-green:hover { background: #047857; }
 .btn-sm { padding: 5px 10px; font-size: 11px; font-weight: 700; }
-.btn-ghost { background: transparent; color: #6b7280; border: 1.5px solid #e5e7eb; flex-shrink: 0; }
+.btn-ghost { background: transparent; color: #6b7280; border: none; flex-shrink: 0; }
 .btn-ghost:hover { background: #f3f4f6; }
 #btn-back-home:hover { background: rgba(255, 255, 255, 0.15) !important; }
 
@@ -1558,10 +1558,10 @@ input:checked + .slider:before {
       <input type="checkbox" id="f-is-draft" style="width:15px; height:15px; cursor:pointer; accent-color:#f59e0b; margin:0;">
       검토요망
     </label>
-    <button class="btn btn-ghost" id="btn-reset" style="flex:none;">초기화</button>
-    <button class="btn btn-green" id="btn-download" style="flex:none;">PNG</button>
-    <button class="btn btn-pdf"   id="btn-download-pdf" style="flex:none;">PDF</button>
-    <button class="btn"           id="btn-download-pptx" style="background:#ea580c; color:white; flex:none;">PPTX</button>
+    <button class="btn btn-ghost" id="btn-reset" style="flex:none; background:transparent;">초기화</button>
+    <button class="btn btn-green" id="btn-download" style="flex:none; background:transparent;">PNG</button>
+    <button class="btn btn-pdf"   id="btn-download-pdf" style="flex:none; background:transparent;">PDF</button>
+    <button class="btn"           id="btn-download-pptx" style="flex:none; background:transparent; color:white;">PPTX</button>
   </div>
 </div>
 
