@@ -47,7 +47,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #e2e5e9;
+  background: #434446;
   padding: 20px 24px;
   overflow: hidden;
   gap: 20px;
@@ -611,7 +611,7 @@ input[type="file"] { display: none; }
   line-height: 1.3;
 }
 .sc-prod-partno {
-  font-size: 16px;
+  font-size: 13px;
   color: #3C3C3C;
   font-weight: 300;
   opacity: 0.6;
@@ -2884,7 +2884,7 @@ function renderDimOverlay() {
   dimensions.forEach(dim => {
     const isSelected = selectedDimId === dim.id;
     const currentLineColor = isSelected ? '#f59e0b' : lineColor;
-    const currentStrokeWidth = isSelected ? '3.5' : '2';
+    const currentStrokeWidth = isSelected ? '1.75' : '1';
 
     const g = document.createElementNS(ns, 'g');
     g.style.cursor = selectToolActive ? 'move' : 'default';
@@ -2966,7 +2966,7 @@ function renderDimOverlay() {
       text.setAttribute('x', 0); text.setAttribute('y', 14);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('font-size', '12');
-      text.setAttribute('font-weight', '700');
+      text.setAttribute('font-weight', '500');
       text.setAttribute('font-family', 'Noto Sans KR, sans-serif');
       text.setAttribute('fill', currentLineColor);
       text.style.cursor = 'pointer';
@@ -3668,7 +3668,7 @@ async function downloadAsPPTX(silent = false) {
       slide.addShape(pptx.shapes.LINE, {
         x: dim.x1 / 100, y: dim.y1 / 100,
         w: (dim.x2 - dim.x1) / 100, h: (dim.y2 - dim.y1) / 100,
-        line: { color: isDark ? 'FFFFFF' : 'EF4444', width: 2 }
+        line: { color: isDark ? 'FFFFFF' : 'EF4444', width: 1 }
       });
 
       const dx = dim.x2 - dim.x1;
@@ -3681,7 +3681,7 @@ async function downloadAsPPTX(silent = false) {
           slide.addShape(pptx.shapes.LINE, {
             x: (px + nx) / 100, y: (py + ny) / 100,
             w: (-2 * nx) / 100, h: (-2 * ny) / 100,
-            line: { color: isDark ? 'FFFFFF' : 'EF4444', width: 2 }
+            line: { color: isDark ? 'FFFFFF' : 'EF4444', width: 1 }
           });
         });
       }
@@ -3701,7 +3701,7 @@ async function downloadAsPPTX(silent = false) {
         x: (mx + ox) / 100 - 1.0,
         y: (my + oy) / 100 - 0.2,
         w: 2.0, h: 0.4,
-        fontSize: 9, fontFace: 'Noto Sans KR', bold: true,
+        fontSize: 9, fontFace: 'Noto Sans KR', bold: false,
         color: isDark ? 'FFFFFF' : 'EF4444',
         align: 'center', valign: 'middle',
         rotate: Math.round(angleDeg)
