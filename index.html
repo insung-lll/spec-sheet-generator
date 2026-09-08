@@ -808,11 +808,24 @@ input[type="file"] { display: none; }
   text-align: center;
   margin-bottom: 48px;
 }
+.home-hero-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 .home-hero h1 {
   font-size: 32px;
   font-weight: 800;
   color: #0f172a;
-  margin-bottom: 12px;
+  margin: 0;
+}
+.home-hero-top .home-search {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .home-hero p {
   color: #64748b;
@@ -823,7 +836,7 @@ input[type="file"] { display: none; }
   background: #2563eb;
   color: white;
   font-weight: 600;
-  padding: 14px 28px;
+  padding: 17px 30px 18px;
   border-radius: 8px;
   border: none;
   font-size: 18px;
@@ -834,17 +847,17 @@ input[type="file"] { display: none; }
   align-items: center;
   gap: 11px;
 }
+.btn-create-new .plus-icon {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
 .btn-create-new:hover {
   background: #1852d4;
   color: #d5dff4;
   transform: translateY(-1px);
 }
 
-.home-searchbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-}
 .home-controls {
   display: flex;
   flex-wrap: wrap;
@@ -1766,19 +1779,15 @@ input:checked + .slider:before {
 
     <!-- Panel 1: Cabinet -->
     <div id="panel-cabinet">
-      <div class="home-searchbar">
-        <div class="home-search">
-          <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
-        </div>
-      </div>
       <div class="home-hero">
-        <h1>보관함</h1>
-        <p>작성된 스펙시트를 불러오거나 카테고리별로 모아서 관리할 수 있습니다.</p>
+        <div class="home-hero-top">
+          <h1>보관함</h1>
+          <div class="home-search">
+            <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
+          </div>
+        </div>
         <button class="btn-create-new" id="btn-create-new">
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <img class="plus-icon" src="icons/icon-plus.svg" alt="">
           새 스펙시트 만들기
         </button>
       </div>
