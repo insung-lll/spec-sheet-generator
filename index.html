@@ -56,10 +56,7 @@ body {
 
 /* Top bar: label + mode toggle */
 .preview-top-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  display: none;
 }
 .preview-label {
   font-size: 10px;
@@ -516,10 +513,6 @@ input[type="file"] { display: none; }
   align-items: flex-end;
   justify-content: space-between;
   padding: 0 32px 10px 32px;
-  background-image: linear-gradient(#111, #111);
-  background-size: 936px 1px;
-  background-position: center bottom;
-  background-repeat: no-repeat;
 }
 .sc-category {
   font-size: 28px;
@@ -605,12 +598,16 @@ input[type="file"] { display: none; }
 .sc-spec-header {
   padding: 20px 0px 14px 24px;
   margin-right: 32px;
-  border-bottom: 1.5px solid #222;
+  border-bottom: 1.5px solid #d6d6d6;
   flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
 }
 .sc-prod-name {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 600;
   color: #111;
   line-height: 1.3;
 }
@@ -618,8 +615,9 @@ input[type="file"] { display: none; }
   font-size: 16px;
   color: #3C3C3C;
   font-weight: 300;
-  margin-top: 3px;
   opacity: 0.6;
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* ===== SYMBOL CHIPS ===== */
@@ -657,8 +655,8 @@ input[type="file"] { display: none; }
   width: 120px;
   flex-shrink: 0;
   font-size: 18px;
-  font-weight: 700;
-  color: #373737;
+  font-weight: 400;
+  color: #626262;
   padding: 6px 0px 6px 24px;
   display: flex;
   align-items: center;
@@ -683,9 +681,6 @@ input[type="file"] { display: none; }
    DARK MODE — spec card
    ======================================================= */
 .spec-card.dark { background: #0f172a; }
-.spec-card.dark .sc-header {
-  background-image: linear-gradient(#64748b, #64748b);
-}
 .spec-card.dark .sc-category { color: #e2e8f0; }
 .spec-card.dark .sc-photo-area { background: #0f172a; }
 .spec-card.dark .sc-dim-area {
@@ -973,9 +968,11 @@ input[type="file"] { display: none; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 9px;
 }
 .sheet-cat-badge {
+  position: relative;
+  top: 3px;
   background: #efefef;
   color: #333333;
   font-family: Arial, 'Noto Sans KR', sans-serif;
@@ -3192,9 +3189,8 @@ function gatherForm() {
 // ── Build Spec Sheet ──────────────────────────────────
 function buildSpec(container, d) {
   container.innerHTML = '';
-  // Apply dark mode class
-  if (d.darkMode) container.classList.add('dark');
-  else            container.classList.remove('dark');
+  // Force light mode always
+  container.classList.remove('dark');
 
   const hasDim1   = !!d.dim1Url;
   const hasDim2   = !!d.dim2Url;
@@ -3204,10 +3200,7 @@ function buildSpec(container, d) {
 
   // Header
   container.insertAdjacentHTML('beforeend', `
-    <div class="sc-header">
-      <div class="sc-category">${esc(d.category)}</div>
-      <img class="sc-logo" src="icons/zibis_logo.png" alt="Zibis Logo" style="height: 36px; object-fit: contain; margin-bottom: -6px; position: relative; left: -4px;">
-    </div>
+    <div class="sc-header"></div>
   `);
 
   // Body
@@ -3278,8 +3271,8 @@ function buildSpec(container, d) {
 
   right.insertAdjacentHTML('beforeend', `
     <div class="sc-spec-header">
-      ${d.partno ? `<div class="sc-prod-partno">${esc(d.partno)}</div>` : ''}
       <div class="sc-prod-name">${esc(d.name || '제품명')}</div>
+      ${d.partno ? `<div class="sc-prod-partno">${esc(d.partno)}</div>` : ''}
     </div>
   `);
 
@@ -3930,10 +3923,6 @@ async function renderHomeSheets() {
       ? `<span class="sheet-draft-badge">검토요망</span>`
       : '';
 
-    const draftBadge = item.isDraft
-      ? `<span style="background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; font-size: 10px; font-weight: 700; padding: 1.5px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; margin-left: 6px;">⚠️ 검토요망</span>`
-      : '';
-
     card.innerHTML = `
       <div class="sheet-thumbnail ${isAdmin ? 'clickable' : ''}" style="position: relative;" ${isAdmin ? `title="열기"` : ''}>
         <div class="sheet-tags">
@@ -3943,7 +3932,7 @@ async function renderHomeSheets() {
         ${thumbHtml}
       </div>
       <div class="sheet-info">
-        <div class="sheet-name" style="display: flex; align-items: center; flex-wrap: wrap;">${esc(item.name || '이름 없음')}${draftBadge}</div>
+        <div class="sheet-name" style="display: flex; align-items: center; flex-wrap: wrap;">${esc(item.name || '이름 없음')}</div>
         <div class="sheet-partno">${esc(item.partno || '-')}</div>
         <div class="sheet-date">${dateStr}</div>
       </div>
@@ -4229,7 +4218,7 @@ function restoreStateFromSnapshot(s) {
   state.dimUrl2 = s.dimUrl2;
   state.bgRemovedDimUrl2 = s.bgRemovedDimUrl2;
   state.dimScale2 = s.dimScale2;
-  state.darkMode = s.darkMode;
+  state.darkMode = false;
   
   dimensions = s.dimensions;
   dimIdCounter = s.dimIdCounter;
@@ -4356,7 +4345,7 @@ async function downloadSpecSheetDirectly(id, format) {
   state.dimUrl2 = data.dimUrl2;
   state.bgRemovedDimUrl2 = data.bgRemovedDimUrl2;
   state.dimScale2 = data.dimScale2 ?? 1.0;
-  state.darkMode = data.darkMode || false;
+  state.darkMode = false;
   dimensions = data.dimensions || [];
   dimIdCounter = data.dimIdCounter || 0;
 
@@ -4443,7 +4432,7 @@ async function loadSpecSheet(id) {
   state.bgRemovedDimUrl2 = data.bgRemovedDimUrl2;
   state.dimScale2 = data.dimScale2 ?? 1.0;
 
-  state.darkMode = data.darkMode || false;
+  state.darkMode = false;
 
   dimensions = data.dimensions || [];
   dimIdCounter = data.dimIdCounter || 0;
