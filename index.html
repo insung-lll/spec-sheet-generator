@@ -888,9 +888,6 @@ input[type="file"] { display: none; }
   white-space: nowrap;
   transition: all 0.15s;
 }
-.home-cat-tab:hover {
-  background: #e7e7e7;
-}
 .home-cat-tab.active {
   background: #000000;
   color: #ffffff;
@@ -927,24 +924,23 @@ input[type="file"] { display: none; }
 .grid-sheets {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  gap: 14px;
 }
 .sheet-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  background: #fdfdfd;
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
   transition: all 0.2s;
   display: flex;
   flex-direction: column;
 }
 .sheet-card:hover {
   transform: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  box-shadow: none;
 }
 .sheet-thumbnail {
-  height: 160px;
+  height: 220px;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
@@ -969,17 +965,34 @@ input[type="file"] { display: none; }
   font-size: 40px;
   opacity: 0.25;
 }
-.sheet-cat-badge {
+.sheet-tags {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(15,23,42,0.75);
-  color: white;
-  font-size: 9px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.sheet-cat-badge {
+  background: #efefef;
+  color: #333333;
+  font-family: Arial, 'Noto Sans KR', sans-serif;
+  font-size: 10px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.sheet-draft-badge {
+  background: #efefef;
+  color: #d71212;
+  font-family: Arial, 'Noto Sans KR', sans-serif;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 12px;
-  text-transform: uppercase;
+  font-size: 10px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 .sheet-info {
   padding: 16px;
@@ -1798,8 +1811,6 @@ input:checked + .slider:before {
           <button class="home-cat-tab" data-cat="SPOT LIGHT">SPOT LIGHT</button>
           <button class="home-cat-tab" data-cat="TRACK LIGHT">TRACK LIGHT</button>
           <button class="home-cat-tab" data-cat="LINEAR LIGHT">LINEAR LIGHT</button>
-          <button class="home-cat-tab" data-cat="WALL LIGHT">WALL LIGHT</button>
-          <button class="home-cat-tab" data-cat="CEILING LIGHT">CEILING LIGHT</button>
         </div>
       </div>
 
@@ -3918,7 +3929,7 @@ async function renderHomeSheets() {
       : `<span class="placeholder-thumb">📄</span>`;
 
     const draftThumbBadge = item.isDraft
-      ? `<span class="sheet-draft-badge" style="position: absolute; top: 10px; right: 10px; background: #f59e0b; color: white; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 12px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 3px;">⚠️ 검토요망</span>`
+      ? `<span class="sheet-draft-badge">검토요망</span>`
       : '';
 
     const draftBadge = item.isDraft
@@ -3927,8 +3938,10 @@ async function renderHomeSheets() {
 
     card.innerHTML = `
       <div class="sheet-thumbnail ${isAdmin ? 'clickable' : ''}" style="position: relative;" ${isAdmin ? `title="열기"` : ''}>
-        <span class="sheet-cat-badge">${esc(item.category)}</span>
-        ${draftThumbBadge}
+        <div class="sheet-tags">
+          <span class="sheet-cat-badge">${esc(item.category)}</span>
+          ${draftThumbBadge}
+        </div>
         ${thumbHtml}
       </div>
       <div class="sheet-info">
@@ -3941,7 +3954,7 @@ async function renderHomeSheets() {
         <button class="card-fmt dir-dl-btn" data-fmt="PNG" title="스펙시트 PNG 다운로드">PNG</button>
         <button class="card-fmt dir-dl-btn" data-fmt="PDF" title="스펙시트 PDF 다운로드">PDF</button>
         <button class="card-fmt dir-dl-btn" data-fmt="PPTX" title="스펙시트 PPTX 다운로드">PPTX</button>
-        <button class="card-fmt dir-img-dl-btn" title="원본 제품 이미지 다운로드">이미지</button>
+        <button class="card-fmt dir-img-dl-btn" title="원본 제품 이미지 다운로드">IMG</button>
         <button class="card-trash btn-delete" title="삭제" ${isAdmin ? '' : 'style="display:none;"'}></button>
       </div>
     `;
