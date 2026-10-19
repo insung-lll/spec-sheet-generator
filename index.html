@@ -29,6 +29,7 @@ body {
   background: #f1f1f1; color: #3f3f3f; border: none;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
+
 /* ===== APP HEADER ===== */
 .app-header {
   height: 52px;
@@ -1541,6 +1542,61 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(16px);
 }
+
+/* ===== MOBILE ===== */
+.search-toggle-btn, .sheet-handle { display: none; }
+@media (max-width: 768px) {
+  /* 홈: 검색바 → 돋보기 아이콘 */
+  .home-header { position: relative; }
+  .home-header-right { gap: 8px; margin-left: auto; flex-shrink: 0; }
+  .home-search { position: static; width: auto; order: 0; }
+  .home-header #btn-admin-toggle { order: 1; display: inline-flex; }
+  .home-search::before { display: none; }
+  .search-toggle-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; padding: 0;
+    border: none; background: transparent; cursor: pointer;
+  }
+  .search-toggle-btn img { width: 18px; height: 18px; display: block; filter: brightness(0); }
+  .home-search input {
+    display: none; position: absolute; left: 16px; right: 16px; top: 100%;
+    width: auto; z-index: 40; padding: 10px 12px; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .home-search.open input { display: block; }
+  .home-header { padding: 8px 12px 8px 0; }
+  .home-header .home-logo { height: 32px; }
+  .home-header #btn-admin-toggle { margin-right: 0; }
+  .home-body { padding: 24px 16px; }
+
+  /* 편집: 입력 폼 → Bottom Sheet */
+  .app-layout { display: block; height: 100vh; height: 100dvh; }
+  .preview-panel {
+    height: calc(100vh - 56px); height: calc(100dvh - 56px);
+    padding: 56px 12px 12px;
+  }
+  .tool-btn { height: 34px; padding: 0 12px; font-size: 12px; }
+  .form-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 100;
+    width: 100%; max-width: 100%; margin: 0 auto; height: 80vh; height: 80dvh;
+    border-left: none; border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+    transform: translateY(calc(100% - 56px));
+    transition: transform 0.3s ease;
+  }
+  .form-panel.sheet-open { transform: translateY(0); }
+  .sheet-handle {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; height: 56px; flex-shrink: 0; cursor: pointer;
+    border-bottom: 1px solid #e5e7eb; touch-action: none;
+  }
+  .sheet-grabber { width: 40px; height: 4px; border-radius: 2px; background: #d1d5db; }
+  .sheet-handle-title { font-size: 13px; font-weight: 700; color: #2563eb; }
+  .form-body { padding: 14px 16px; text-align: center; }
+  .form-body .form-group > label, .form-body .section-label { text-align: center; }
+  .form-footer { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+}
+
 </style>
 </head>
 <body>
@@ -1590,7 +1646,11 @@ input:checked + .slider:before {
   </div>
 
   <!-- ══ FORM PANEL (RIGHT) ════════════════════════════ -->
-  <div class="form-panel">
+  <div class="form-panel" id="form-panel">
+    <div class="sheet-handle" id="sheet-handle" role="button" aria-label="편집 패널 열기/닫기">
+      <span class="sheet-grabber"></span>
+      <span class="sheet-handle-title">제품 정보 편집</span>
+    </div>
     <div class="form-body">
 
       <!-- 이미지 -->
@@ -1769,6 +1829,7 @@ input:checked + .slider:before {
     <img class="home-logo" src="icons/logo_3.svg" alt="ZIBIS">
     <div class="home-header-right">
     <div class="home-search">
+      <button type="button" id="btn-search-toggle" class="search-toggle-btn" aria-label="검색"><img src="icons/icon-search.svg" alt=""></button>
       <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
     </div>
     <button id="btn-admin-toggle">
@@ -4925,6 +4986,27 @@ q('home-category-tabs').querySelectorAll('.home-cat-tab').forEach(tab => {
 });
 
 q('search-input').addEventListener('input', renderHomeSheets);
+q('btn-search-toggle').addEventListener('click', () => {
+  const box = q('search-input').parentElement;
+  box.classList.toggle('open');
+  if (box.classList.contains('open')) q('search-input').focus();
+});
+
+// Bottom Sheet (mobile): 탭/스와이프로 열기·닫기
+(function () {
+  const panel = q('form-panel'), handle = q('sheet-handle');
+  let startY = null;
+  handle.addEventListener('click', () => panel.classList.toggle('sheet-open'));
+  handle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+  handle.addEventListener('touchend', e => {
+    if (startY === null) return;
+    const dy = e.changedTouches[0].clientY - startY;
+    startY = null;
+    if (Math.abs(dy) < 30) return;
+    panel.classList.toggle('sheet-open', dy < 0);
+    e.preventDefault();
+  });
+})();
 q('btn-create-new').addEventListener('click', () => createNewSpecSheet());
 q('btn-save-sheet').addEventListener('click', saveCurrentSpecSheet);
 
