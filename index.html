@@ -823,11 +823,10 @@ input[type="file"] { display: none; }
   color: #0f172a;
   margin: 0;
 }
-.home-hero-top .home-search {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.home-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 .home-hero p {
   color: #64748b;
@@ -1768,10 +1767,15 @@ input:checked + .slider:before {
 <div class="home-screen" id="home-screen">
   <div class="home-header">
     <img class="home-logo" src="icons/logo_3.svg" alt="ZIBIS">
+    <div class="home-header-right">
+    <div class="home-search">
+      <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
+    </div>
     <button id="btn-admin-toggle">
       <img class="admin-lock" src="icons/icon-lock.svg" alt="">
       <span id="admin-toggle-label">관리자 로그인</span>
     </button>
+    </div>
   </div>
   <div class="home-body">
     <!-- Main Tabs -->
@@ -1785,9 +1789,6 @@ input:checked + .slider:before {
       <div class="home-hero">
         <div class="home-hero-top">
           <h1>보관함</h1>
-          <div class="home-search">
-            <input type="text" id="search-input" placeholder="제품명 또는 품번 검색...">
-          </div>
         </div>
         <button class="btn-create-new" id="btn-create-new">
           <img class="plus-icon" src="icons/icon-plus.svg" alt="">
